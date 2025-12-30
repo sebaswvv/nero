@@ -1,0 +1,186 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LedgerType {
+  personal
+  household
+}
+
+enum TransactionDirection {
+  expense
+  income
+}
+
+enum Category {
+  groceries
+  subscriptions
+  transport
+  insurance
+  rent
+  salary
+  eating_out
+  other
+}
+
+enum Frequency {
+  monthly
+}
+
+// --------------------
+// NextAuth models
+// --------------------
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+
+  ledgerMembers  LedgerMember[]
+  transactions   Transaction[]
+  recurringItems RecurringItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --------------------
+// Finance MVP models
+// --------------------
+model Ledger {
+  id   String     @id @default(cuid())
+  name String
+  type LedgerType
+
+  members        LedgerMember[]
+  transactions   Transaction[]
+  recurringItems RecurringItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name, type])
+}
+
+model LedgerMember {
+  id       String @id @default(cuid())
+  ledgerId String
+  userId   String
+  role     String @default("editor") 
+
+  ledger Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([ledgerId, userId])
+}
+
+model Transaction {
+  id             String  @id @default(cuid())
+  ledgerId       String
+  userId         String
+  ledgerMemberId String?
+
+  occurredAt  DateTime
+  direction   TransactionDirection
+  amountCents Int
+  category    Category
+  description String?
+
+  merchant       String?
+  idempotencyKey String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  ledger Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ledgerId, idempotencyKey])
+  @@index([ledgerId, occurredAt])
+}
+
+model RecurringItem {
+  id          String @id @default(cuid())
+  ledgerId    String
+  createdById String
+
+  name      String
+  direction TransactionDirection
+  frequency Frequency            @default(monthly)
+  isActive  Boolean              @default(true)
+
+  versions RecurringItemVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ledger    Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  createdBy User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@unique([ledgerId, name])
+  @@index([ledgerId, isActive])
+}
+
+model RecurringItemVersion {
+  id              String @id @default(cuid())
+  recurringItemId String
+
+  amountCents Int
+  validFrom   DateTime
+  validTo     DateTime?
+
+  createdById String
+  createdAt   DateTime @default(now())
+
+  recurringItem RecurringItem @relation(fields: [recurringItemId], references: [id], onDelete: Cascade)
+
+  @@index([recurringItemId, validFrom])
+}
