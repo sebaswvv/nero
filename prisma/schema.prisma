@@ -21,13 +21,14 @@ enum TransactionDirection {
 
 enum Category {
   groceries
-  subscriptions
-  transport
-  insurance
-  rent
-  salary
   eating_out
+  going_out
+  transport
+  clothing
+  health_and_fitness
   other
+  gifts
+  incidental_income
 }
 
 enum Frequency {
