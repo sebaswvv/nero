@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
+import crypto from "crypto";
 
 const allowedEmails =
   process.env.ALLOWED_EMAILS?.split(",").map(e => e.trim().toLowerCase()) ?? [];
@@ -27,6 +28,16 @@ const handler = NextAuth({
         session.user.id = user.id;
       }
       return session;
+    },
+  },
+
+  events: {
+    async createUser({ user }) {
+      const apiKey = crypto.randomBytes(24).toString("hex");
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { apiKey },
+      });
     },
   },
 });
