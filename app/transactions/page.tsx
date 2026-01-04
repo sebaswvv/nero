@@ -140,27 +140,136 @@ export default function TransactionsPage() {
     }
   }
 
+  // new: centralized styles and small helper
+  const styles = {
+    main: {
+      padding: 24,
+      maxWidth: 980,
+      margin: "0 auto",
+      display: "grid",
+      gap: 16,
+      color: "#E6EEF3",
+      fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial",
+    } as React.CSSProperties,
+    card: {
+      padding: 18,
+      borderRadius: 12,
+      border: "1px solid rgba(255,255,255,0.06)",
+      background: "linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.006))",
+    } as React.CSSProperties,
+    headerCard: {
+      padding: 16,
+      borderRadius: 12,
+      border: "1px solid rgba(255,255,255,0.04)",
+      background: "rgba(255,255,255,0.01)",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    } as React.CSSProperties,
+    formGrid: {
+      display: "grid",
+      gap: 10,
+      gridTemplateColumns: "1fr 180px",
+    } as React.CSSProperties,
+    input: {
+      background: "rgba(255,255,255,0.02)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      color: "#E6EEF3",
+      padding: "8px 10px",
+      borderRadius: 8,
+    } as React.CSSProperties,
+    select: {
+      background: "rgba(255,255,255,0.02)",
+      border: "1px solid rgba(255,255,255,0.06)",
+      color: "#E6EEF3",
+      padding: "8px 10px",
+      borderRadius: 8,
+    } as React.CSSProperties,
+    buttonPrimary: {
+      padding: "8px 12px",
+      borderRadius: 8,
+      border: "1px solid rgba(255,255,255,0.12)",
+      background: "rgba(255,255,255,0.05)",
+      color: "white",
+      cursor: "pointer",
+    } as React.CSSProperties,
+    buttonGhost: {
+      padding: "8px 12px",
+      borderRadius: 8,
+      border: "1px solid rgba(255,255,255,0.04)",
+      background: "transparent",
+      color: "rgba(230,238,243,0.9)",
+      cursor: "pointer",
+    } as React.CSSProperties,
+    controlBar: {
+      display: "flex",
+      gap: 12,
+      alignItems: "center",
+      marginBottom: 12,
+    } as React.CSSProperties,
+    ledgerSelect: {
+      minWidth: 220,
+    } as React.CSSProperties,
+    txList: {
+      display: "grid",
+      gap: 12,
+      marginTop: 8,
+    } as React.CSSProperties,
+    txItem: {
+      padding: 12,
+      borderRadius: 10,
+      border: "1px solid rgba(255,255,255,0.06)",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      background: "rgba(255,255,255,0.01)",
+    } as React.CSSProperties,
+    badge: {
+      fontSize: 12,
+      padding: "4px 8px",
+      borderRadius: 999,
+      background: "rgba(255,255,255,0.02)",
+      border: "1px solid rgba(255,255,255,0.04)",
+      color: "rgba(230,238,243,0.95)",
+      marginRight: 8,
+    } as React.CSSProperties,
+    amountPositive: { color: "#6EE7B7", fontWeight: 600 } as React.CSSProperties,
+    amountNegative: { color: "#FFB4AA", fontWeight: 600 } as React.CSSProperties,
+    muted: { opacity: 0.75, fontSize: 13 } as React.CSSProperties,
+  };
+
+  function formatAmount(cents: number) {
+    return (cents / 100).toFixed(2);
+  }
+
   return (
-    <main style={{ padding: 24, maxWidth: 900, margin: "0 auto", display: "grid", gap: 16 }}>
-      <header style={{ display: "grid", gap: 6 }}>
-        <h2 style={{ margin: 0 }}>Transactions</h2>
-        <p style={{ margin: 0, opacity: 0.75 }}>View transactions for a ledger (monthly or yearly).</p>
+    <main style={styles.main}>
+      {/* header */}
+      <header style={styles.headerCard}>
+        <div>
+          <h2 style={{ margin: 0 }}>Transactions</h2>
+          <p style={{ margin: 0, opacity: 0.7, fontSize: 13 }}>View and create transactions for a ledger — monthly or yearly.</p>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 12, color: "rgba(230,238,243,0.7)" }}>Total</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{(total / 100).toFixed(2)}</div>
+        </div>
       </header>
 
-      {error && <div style={{ padding: 12, borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,0,0,0.06)" }}>{error}</div>}
+      {error && <div style={{ ...styles.card, borderColor: "rgba(255,80,80,0.25)", background: "rgba(255,50,50,0.04)" }}>{error}</div>}
 
-      <section style={{ padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)" }}>
+      <section style={styles.card}>
         {/* Create transaction form */}
-        <div style={{ display: "grid", gap: 10, marginBottom: 12 }}>
+        <div style={{ display: "grid", gap: 12, marginBottom: 12 }}>
           <h3 style={{ margin: 0 }}>Create transaction</h3>
           {txError && <div style={{ color: "tomato", padding: 8, borderRadius: 8 }}>{txError}</div>}
 
-          <div style={{ display: "grid", gap: 8, gridTemplateColumns: "1fr 180px" }}>
-            <input placeholder="Merchant (optional)" value={txMerchant} onChange={(e) => setTxMerchant(e.target.value)} />
-            <input type="date" value={txOccurredAt} onChange={(e) => setTxOccurredAt(e.target.value)} />
-            <input placeholder="Description (optional)" value={txDescription} onChange={(e) => setTxDescription(e.target.value)} style={{ gridColumn: "1 / -1" }} />
-            <input placeholder="Amount (cents)" value={txAmount} onChange={(e) => setTxAmount(e.target.value === "" ? "" : parseInt(e.target.value, 10))} />
-            <select value={txCategory} onChange={(e) => setTxCategory(e.target.value as any)}>
+          <div style={styles.formGrid}>
+            <input placeholder="Merchant (optional)" value={txMerchant} onChange={(e) => setTxMerchant(e.target.value)} style={styles.input} />
+            <input type="date" value={txOccurredAt} onChange={(e) => setTxOccurredAt(e.target.value)} style={{ ...styles.input, padding: "6px 10px" }} />
+            <input placeholder="Description (optional)" value={txDescription} onChange={(e) => setTxDescription(e.target.value)} style={{ ...styles.input, gridColumn: "1 / -1" }} />
+            <input placeholder="Amount (cents)" value={txAmount} onChange={(e) => setTxAmount(e.target.value === "" ? "" : parseInt(e.target.value, 10))} style={styles.input} />
+            <select value={txCategory} onChange={(e) => setTxCategory(e.target.value as any)} style={styles.select}>
               <option value="groceries">Groceries</option>
               <option value="eating_out">Eating out</option>
               <option value="going_out">Going out</option>
@@ -171,27 +280,28 @@ export default function TransactionsPage() {
               <option value="incidental_income">Incidental income</option>
               <option value="other">Other</option>
             </select>
-            <select value={txDirection} onChange={(e) => setTxDirection(e.target.value as any)}>
+            <select value={txDirection} onChange={(e) => setTxDirection(e.target.value as any)} style={styles.select}>
               <option value="expense">Expense</option>
               <option value="income">Income</option>
             </select>
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={createTransaction} disabled={creatingTx || !selectedLedger} style={{ padding: "8px 12px" }}>
+            <button onClick={createTransaction} disabled={creatingTx || !selectedLedger} style={styles.buttonPrimary}>
               {creatingTx ? "Creating..." : "Add transaction"}
             </button>
             <div style={{ flex: 1 }} />
-            <button onClick={() => { setTxAmount(""); setTxMerchant(""); setTxDescription(""); setTxError(null); }} style={{ padding: "8px 12px" }}>
+            <button onClick={() => { setTxAmount(""); setTxMerchant(""); setTxDescription(""); setTxError(null); }} style={styles.buttonGhost}>
               Reset
             </button>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+        {/* controls */}
+        <div style={styles.controlBar}>
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontSize: 13, opacity: 0.8 }}>Ledger</span>
-            <select value={selectedLedger ?? ""} onChange={(e) => setSelectedLedger(e.target.value)}>
+            <select value={selectedLedger ?? ""} onChange={(e) => setSelectedLedger(e.target.value)} style={{ ...styles.select, ...styles.ledgerSelect }}>
               <option value="">Select ledger</option>
               {ledgers.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
             </select>
@@ -199,46 +309,48 @@ export default function TransactionsPage() {
 
           <div style={{ flex: 1 }} />
 
-          <button onClick={() => loadTransactions()} disabled={!selectedLedger} style={{ padding: "8px 12px" }}>
+          <button onClick={() => loadTransactions()} disabled={!selectedLedger} style={styles.buttonPrimary}>
             Refresh
           </button>
         </div>
 
+        {/* period controls */}
         <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
-          <button onClick={() => setPeriod("monthly")} style={{ padding: "6px 10px", borderRadius: 8, border: period === "monthly" ? "1px solid rgba(255,255,255,0.18)" : "1px solid transparent", background: period === "monthly" ? "rgba(255,255,255,0.04)" : "transparent" }}>Monthly</button>
-          <button onClick={() => setPeriod("yearly")} style={{ padding: "6px 10px", borderRadius: 8, border: period === "yearly" ? "1px solid rgba(255,255,255,0.18)" : "1px solid transparent", background: period === "yearly" ? "rgba(255,255,255,0.04)" : "transparent" }}>Yearly</button>
+          <button onClick={() => setPeriod("monthly")} style={{ ...styles.buttonGhost, border: period === "monthly" ? "1px solid rgba(255,255,255,0.12)" : styles.buttonGhost.border, background: period === "monthly" ? "rgba(255,255,255,0.03)" : "transparent" }}>Monthly</button>
+          <button onClick={() => setPeriod("yearly")} style={{ ...styles.buttonGhost, border: period === "yearly" ? "1px solid rgba(255,255,255,0.12)" : styles.buttonGhost.border, background: period === "yearly" ? "rgba(255,255,255,0.03)" : "transparent" }}>Yearly</button>
 
           <div style={{ flex: 1 }} />
 
           {period === "monthly" ? (
-            <input type="month" value={date} onChange={(e) => setDate(e.target.value)} />
+            <input type="month" value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} />
           ) : (
-            <input type="number" value={date} onChange={(e) => setDate(e.target.value)} style={{ width: 100 }} />
+            <input type="number" value={date} onChange={(e) => setDate(e.target.value)} style={{ ...styles.input, width: 120 }} />
           )}
         </div>
 
+        {/* transactions list */}
         <div>
           {loading ? (
-            <div style={{ opacity: 0.75 }}>Loading…</div>
+            <div style={styles.muted}>Loading…</div>
           ) : transactions.length === 0 ? (
-            <div style={{ opacity: 0.75 }}>No transactions for selected range.</div>
+            <div style={styles.muted}>No transactions for selected range.</div>
           ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              <div style={{ opacity: 0.9 }}>Total: {(total / 100).toFixed(2)}</div>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
-                {transactions.map(t => (
-                  <li key={t.id} style={{ padding: 10, borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)", display: "flex", justifyContent: "space-between", gap: 12 }}>
-                    <div style={{ display: "grid" }}>
-                      <strong>{t.category} • {t.direction}</strong>
-                      <span style={{ opacity: 0.8, fontSize: 13 }}>{new Date(t.occurredAt).toISOString().slice(0,10)} {t.merchant ? `• ${t.merchant}` : ""}</span>
-                      {t.description && <span style={{ fontSize: 13, opacity: 0.85 }}>{t.description}</span>}
+            <div style={styles.txList}>
+              {transactions.map(t => (
+                <li key={t.id} style={styles.txItem}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <span style={styles.badge}>{t.category}</span>
+                    <div>
+                      <strong>{t.direction}</strong>
+                      <div style={{ ...styles.muted }}>{new Date(t.occurredAt).toISOString().slice(0,10)} {t.merchant ? `• ${t.merchant}` : ""}</div>
+                      {t.description && <div style={{ fontSize: 13, opacity: 0.9 }}>{t.description}</div>}
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 14 }}>{(t.amountCents / 100).toFixed(2)}</div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={t.direction === "income" ? styles.amountPositive : styles.amountNegative}>{formatAmount(t.amountCents)}</div>
+                  </div>
+                </li>
+              ))}
             </div>
           )}
         </div>

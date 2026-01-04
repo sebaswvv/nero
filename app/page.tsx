@@ -25,7 +25,7 @@ export default function Home() {
         <header style={{ display: "grid", gap: 6 }}>
           <h1 style={{ margin: 0 }}>Nero</h1>
           <p style={{ margin: 0, opacity: 0.7 }}>
-            Personal finance playground
+            Personal finance
           </p>
         </header>
 
