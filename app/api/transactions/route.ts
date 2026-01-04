@@ -1,4 +1,3 @@
-import { getApiKey } from "@/lib/api-key";
 import { createTransaction, listTransactions } from "@/services/transaction.service";
 import { toErrorResponse, jsonResponse } from "@/lib/http";
 import { CreateTransactionDto } from "@/types/dtos/create-transaction.dto";
@@ -9,13 +8,13 @@ export const runtime = "nodejs";
 
 // POST /api/transactions
 export async function POST(req: Request) {
-	// use API key auth for this endpoint
-	const apiKey = getApiKey(req);
-	if (!apiKey) {
-		return toErrorResponse(new Error("Missing API key"));
+	// normal session auth (like other endpoints)
+	const session = await getServerSession(authOptions);
+	if (!session?.user?.id) {
+		return toErrorResponse(new Error("Unauthorized"));
 	}
 
-    // parse body
+	// parse body
 	let body: CreateTransactionDto;
 	try {
 		body = (await req.json()) as CreateTransactionDto;
@@ -23,9 +22,9 @@ export async function POST(req: Request) {
 		return toErrorResponse(new Error("Invalid JSON body"));
 	}
 
-    // create new transaction
+	// create new transaction (use session.user.id)
 	try {
-		const transaction = await createTransaction(apiKey, body);
+		const transaction = await createTransaction(session.user.id, body);
 		return jsonResponse(transaction, 201);
 	} catch (e) {
 		return toErrorResponse(e);
