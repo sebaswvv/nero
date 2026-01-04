@@ -83,8 +83,6 @@ export default function TransactionsPage() {
   useEffect(() => { loadLedgers(); }, []);
   useEffect(() => { if (selectedLedger) loadTransactions(selectedLedger); }, [selectedLedger, period, date]);
 
-  const total = transactions.reduce((s, t) => s + (t.direction === "expense" ? -t.amountCents : t.amountCents), 0);
-
   async function createTransaction() {
     if (!selectedLedger) {
       setTxError("Select a ledger");
@@ -249,10 +247,6 @@ export default function TransactionsPage() {
         <div>
           <h2 style={{ margin: 0 }}>Transactions</h2>
           <p style={{ margin: 0, opacity: 0.7, fontSize: 13 }}>View and create transactions for a ledger — monthly or yearly.</p>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 12, color: "rgba(230,238,243,0.7)" }}>Total</div>
-          <div style={{ fontSize: 20, fontWeight: 700 }}>{(total / 100).toFixed(2)}</div>
         </div>
       </header>
 
