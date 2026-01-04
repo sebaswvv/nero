@@ -65,6 +65,20 @@ export default function Home() {
           </Link>
 
           <Link
+            href="/recurring"
+            style={{
+              padding: "12px",
+              textAlign: "center",
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.15)",
+              textDecoration: "none",
+              color: "inherit",
+            }}
+          >
+            Recurring items
+          </Link>
+
+          <Link
             href="/api/auth/signout"
             style={{
               padding: "12px",
