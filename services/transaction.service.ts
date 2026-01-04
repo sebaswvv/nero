@@ -82,3 +82,63 @@ export async function createTransaction(
 		throw e;
 	}
 }
+
+// Add: list transactions for a ledger with monthly/yearly filtering
+export async function listTransactions(
+	userId: string,
+	ledgerId: string,
+	period: "monthly" | "yearly" = "monthly",
+	dateStr?: string
+) {
+	// check ledger access
+	const member = await prisma.ledgerMember.findUnique({
+		where: { ledgerId_userId: { ledgerId, userId } },
+	});
+	if (!member) throw new ForbiddenError("NO_LEDGER_ACCESS", "No access to ledger");
+
+	// compute start/end for range
+	let start: Date;
+	let end: Date;
+	const now = new Date();
+
+	if (period === "monthly") {
+		// expect dateStr like "YYYY-MM" (month input). fallback to current month.
+		let year = now.getUTCFullYear();
+		let month = now.getUTCMonth();
+		if (dateStr) {
+			const [y, m] = dateStr.split("-");
+			const yNum = parseInt(y, 10);
+			const mNum = parseInt(m, 10);
+			if (!Number.isInteger(yNum) || !Number.isInteger(mNum) || mNum < 1 || mNum > 12) {
+				throw new BadRequestError("INVALID_DATE", "date must be YYYY-MM for monthly view");
+			}
+			year = yNum;
+			month = mNum - 1;
+		}
+		start = new Date(Date.UTC(year, month, 1, 0, 0, 0));
+		end = new Date(Date.UTC(year, month + 1, 1, 0, 0, 0));
+	} else {
+		// yearly: expect "YYYY" or fallback to current year
+		let year = now.getUTCFullYear();
+		if (dateStr) {
+			const yNum = parseInt(dateStr, 10);
+			if (!Number.isInteger(yNum) || yNum < 0) {
+				throw new BadRequestError("INVALID_DATE", "date must be YYYY for yearly view");
+			}
+			year = yNum;
+		}
+		start = new Date(Date.UTC(year, 0, 1, 0, 0, 0));
+		end = new Date(Date.UTC(year + 1, 0, 1, 0, 0, 0));
+	}
+
+	return prisma.transaction.findMany({
+		where: {
+			ledgerId,
+			occurredAt: {
+				gte: start,
+				lt: end,
+			},
+		},
+		orderBy: { occurredAt: "desc" },
+	});
+}
