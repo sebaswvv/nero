@@ -1,56 +1,42 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { prisma } from "@/lib/db";
-import { authOptions } from "@/lib/auth-options";
-
 export const runtime = "nodejs";
+
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
+import { createLedger, listLedgers } from "@/services/ledger.service";
+import { toErrorResponse, jsonResponse } from "@/lib/http";
 
 // POST /api/ledgers
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  const userId = session?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // authenticate user
+	const session = await getServerSession(authOptions);
+	if (!session?.user?.id) {
+		return toErrorResponse(new Error("Unauthorized"));
+	}
 
-  const body = await req.json();
-  const { name, type } = body as { name: string; type: "personal" | "household" };
+  // parse body
+	const body = await req.json();
 
-  if (!name || !type) {
-    return NextResponse.json({ error: "name and type required" }, { status: 400 });
-  }
-
-  const ledger = await prisma.ledger.create({
-    data: {
-      name,
-      type,
-      members: {
-        create: {
-          userId: userId,
-          role: "owner",
-        },
-      },
-    },
-  });
-
-  return NextResponse.json(ledger, { status: 201 });
+	try {
+		const ledger = await createLedger(session.user.id, body);
+		return jsonResponse(ledger, 201);
+	} catch (e) {
+		return toErrorResponse(e);
+	}
 }
 
 // GET /api/ledgers
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // authenticate user
+	const session = await getServerSession(authOptions);
+	if (!session?.user?.id) {
+		return toErrorResponse(new Error("Unauthorized"));
+	}
 
-  const ledgers = await prisma.ledger.findMany({
-    where: {
-      members: {
-        some: { userId: session.user.id },
-      },
-    },
-    orderBy: { createdAt: "asc" },
-  });
-
-  return NextResponse.json(ledgers);
+  // list ledgers
+	try {
+    const ledgers = await listLedgers(session.user.id);
+		return jsonResponse(ledgers);
+	} catch (e) {
+		return toErrorResponse(e);
+	}
 }
