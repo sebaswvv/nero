@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth-options";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+  const user = session?.user ?? null;
+
   return (
     <main
       style={{
@@ -22,91 +27,97 @@ export default function Home() {
           border: "1px solid rgba(255,255,255,0.12)",
         }}
       >
-        <header style={{ display: "grid", gap: 6 }}>
-          <h1 style={{ margin: 0 }}>Nero</h1>
-          <p style={{ margin: 0, opacity: 0.7 }}>
-            Personal finance
-          </p>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
+          <div>
+            <h1 style={{ margin: 0 }}>Nero</h1>
+            <p style={{ margin: 0, opacity: 0.7 }}>Personal finance</p>
+          </div>
+          <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+            {user ? (
+              <>
+                <div style={{ fontSize: 13, opacity: 0.85 }}>{user.name ?? user.email}</div>
+                <Link
+                  href="/api/auth/signout"
+                  style={{
+                    padding: "8px 10px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    textDecoration: "none",
+                    color: "inherit",
+                    opacity: 0.9,
+                  }}
+                >
+                  Sign out
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/api/auth/signin"
+                style={{
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
         </header>
 
-        <nav
-          style={{
-            display: "grid",
-            gap: 10,
-            marginTop: 8,
-          }}
-        >
-          <Link
-            href="/api/auth/signin"
+        {user && (
+          <nav
             style={{
-              padding: "12px",
-              textAlign: "center",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.15)",
-              textDecoration: "none",
-              color: "inherit",
+              display: "grid",
+              gap: 10,
+              marginTop: 8,
             }}
           >
-            Sign in
-          </Link>
+            <Link
+              href="/ledgers"
+              style={{
+                padding: "12px",
+                textAlign: "center",
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              Ledgers
+            </Link>
 
-          <Link
-            href="/ledgers"
-            style={{
-              padding: "12px",
-              textAlign: "center",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.15)",
-              textDecoration: "none",
-              color: "inherit",
-            }}
-          >
-            Ledgers
-          </Link>
+            <Link
+              href="/recurring"
+              style={{
+                padding: "12px",
+                textAlign: "center",
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              Recurring items
+            </Link>
 
-          <Link
-            href="/recurring"
-            style={{
-              padding: "12px",
-              textAlign: "center",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.15)",
-              textDecoration: "none",
-              color: "inherit",
-            }}
-          >
-            Recurring items
-          </Link>
-
-          <Link
-            href="/transactions"
-            style={{
-              padding: "12px",
-              textAlign: "center",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.15)",
-              textDecoration: "none",
-              color: "inherit",
-            }}
-          >
-            Transactions
-          </Link>
-
-          <Link
-            href="/api/auth/signout"
-            style={{
-              padding: "12px",
-              textAlign: "center",
-              borderRadius: 12,
-              border: "1px solid rgba(255,255,255,0.15)",
-              textDecoration: "none",
-              color: "inherit",
-              opacity: 0.8,
-            }}
-          >
-            Sign out
-          </Link>
-        </nav>
+            <Link
+              href="/transactions"
+              style={{
+                padding: "12px",
+                textAlign: "center",
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              Transactions
+            </Link>
+          </nav>
+        )}
       </div>
     </main>
   );
