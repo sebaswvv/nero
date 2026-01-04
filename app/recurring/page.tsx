@@ -16,9 +16,14 @@ export default function RecurringPage() {
   const [ledgers, setLedgers] = useState<Ledger[]>([]);
   const [selectedLedger, setSelectedLedger] = useState<string | null>(null);
   const [items, setItems] = useState<RecurringItem[]>([]);
+  const [selectedTab, setSelectedTab] = useState<"expenses" | "income">("expenses");
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const filteredItems = items.filter((it) =>
+    selectedTab === "expenses" ? it.direction === "expense" : it.direction === "income"
+  );
 
   // form state
   const [name, setName] = useState("");
@@ -184,13 +189,39 @@ export default function RecurringPage() {
       <section style={{ padding: 16, borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)" }}>
         <h3 style={{ marginTop: 0, marginBottom: 12 }}>Items</h3>
 
+        {/* Tabs */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <button
+            onClick={() => setSelectedTab("expenses")}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: selectedTab === "expenses" ? "1px solid rgba(255,255,255,0.18)" : "1px solid transparent",
+              background: selectedTab === "expenses" ? "rgba(255,255,255,0.04)" : "transparent",
+            }}
+          >
+            Expenses
+          </button>
+          <button
+            onClick={() => setSelectedTab("income")}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: selectedTab === "income" ? "1px solid rgba(255,255,255,0.18)" : "1px solid transparent",
+              background: selectedTab === "income" ? "rgba(255,255,255,0.04)" : "transparent",
+            }}
+          >
+            Income
+          </button>
+        </div>
+
         {loading ? (
           <div style={{ opacity: 0.75 }}>Loading…</div>
-        ) : items.length === 0 ? (
-          <div style={{ opacity: 0.75 }}>No recurring items.</div>
+        ) : filteredItems.length === 0 ? (
+          <div style={{ opacity: 0.75 }}>No recurring items for this tab.</div>
         ) : (
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
-            {items.map((it) => (
+            {filteredItems.map((it) => (
               <li key={it.id} style={{ padding: 12, borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)", display: "grid", gap: 8 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <div>
