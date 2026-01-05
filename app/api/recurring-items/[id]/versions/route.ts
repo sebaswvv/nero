@@ -1,5 +1,6 @@
 export const runtime = "nodejs";
 
+import { NextRequest } from "next/server";
 import { jsonResponse } from "@/lib/http";
 import { routeHandler, parseJsonBody, parseParams } from "@/lib/validation";
 import { requireUserId } from "@/lib/auth";
@@ -10,11 +11,14 @@ import { IdSchema } from "@/schemas/common.schemas";
 
 const ParamsSchema = z.object({ id: IdSchema });
 
-export async function POST(req: Request, ctx: { params: { id: string } }) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   return routeHandler(async () => {
     const userId = await requireUserId();
-    const { id } = parseParams(ctx.params, ParamsSchema);
-    const body = await parseJsonBody(req, CreateRecurringVersionBodySchema);
+
+    const params = await context.params;
+    const { id } = parseParams(params, ParamsSchema);
+
+    const body = await parseJsonBody(request, CreateRecurringVersionBodySchema);
 
     const version = await createRecurringItemVersion(userId, id, body);
     return jsonResponse(version, 201);
