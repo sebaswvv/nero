@@ -7,13 +7,13 @@ import { toErrorResponse, jsonResponse } from "@/lib/http";
 
 // POST /api/ledgers
 export async function POST(req: Request) {
-  // authenticate user
+  	// authenticate user
 	const session = await getServerSession(authOptions);
 	if (!session?.user?.id) {
 		return toErrorResponse(new Error("Unauthorized"));
 	}
 
-  // parse body
+  	// parse body
 	const body = await req.json();
 
 	try {
@@ -26,13 +26,13 @@ export async function POST(req: Request) {
 
 // GET /api/ledgers
 export async function GET() {
-  // authenticate user
+  	// authenticate user
 	const session = await getServerSession(authOptions);
 	if (!session?.user?.id) {
 		return toErrorResponse(new Error("Unauthorized"));
 	}
 
-  // list ledgers
+  	// list ledgers
 	try {
     const ledgers = await listLedgers(session.user.id);
 		return jsonResponse(ledgers);

@@ -47,4 +47,4 @@ export async function GET(req: Request) {
   } catch (e) {
     return toErrorResponse(e);
   }
-}
+  }
