@@ -1,36 +1,22 @@
 export const runtime = "nodejs";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
+import { jsonResponse } from "@/lib/http";
+import { routeHandler, parseJsonBody, parseParams } from "@/lib/validation";
+import { requireUserId } from "@/lib/auth";
 import { createRecurringItemVersion } from "@/services/recurring.service";
-import { toErrorResponse, jsonResponse } from "@/lib/http";
-import { CreateRecurringVersionDto } from "@/types/dtos/create-recurring.dto";
+import { CreateRecurringVersionBodySchema } from "@/schemas/recurring.schemas";
+import { z } from "zod";
+import { IdSchema } from "@/schemas/common.schemas";
 
-// POST /api/recurring-items/[id]/versions
-export async function POST(req: Request, context: any) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return toErrorResponse(new Error("Unauthorized"));
-  }
+const ParamsSchema = z.object({ id: IdSchema });
 
-  // await params from context
-  const params = await (context?.params ?? {});
-  const id = params?.id;
-  if (!id) {
-    return toErrorResponse(new Error("Missing id param"));
-  }
+export async function POST(req: Request, ctx: { params: { id: string } }) {
+  return routeHandler(async () => {
+    const userId = await requireUserId();
+    const { id } = parseParams(ctx.params, ParamsSchema);
+    const body = await parseJsonBody(req, CreateRecurringVersionBodySchema);
 
-  let body: CreateRecurringVersionDto;
-  try {
-    body = (await req.json()) as CreateRecurringVersionDto;
-  } catch (e) {
-    return toErrorResponse(new Error("Invalid JSON body"));
-  }
-
-  try {
-    const version = await createRecurringItemVersion(session.user.id, id, body);
+    const version = await createRecurringItemVersion(userId, id, body);
     return jsonResponse(version, 201);
-  } catch (e) {
-    return toErrorResponse(e);
-  }
+  });
 }

@@ -1,56 +1,36 @@
-import { createTransaction, listTransactions } from "@/services/transaction.service";
-import { toErrorResponse, jsonResponse } from "@/lib/http";
-import { CreateTransactionDto } from "@/types/dtos/create-transaction.dto";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
-
 export const runtime = "nodejs";
 
-// POST /api/transactions
+import { jsonResponse } from "@/lib/http";
+import { routeHandler, parseJsonBody, parseQuery } from "@/lib/validation";
+import { requireUserId } from "@/lib/auth";
+import { createTransaction, listTransactions } from "@/services/transaction.service";
+import {
+  CreateTransactionBodySchema,
+  ListTransactionsQuerySchema,
+} from "@/schemas/transaction.schemas";
+import { resolveDateRange } from "@/lib/date-range";
+
 export async function POST(req: Request) {
-	// normal session auth
-	const session = await getServerSession(authOptions);
-	if (!session?.user?.id) {
-		return toErrorResponse(new Error("Unauthorized"));
-	}
+  return routeHandler(async () => {
+    const userId = await requireUserId();
+    const body = await parseJsonBody(req, CreateTransactionBodySchema);
 
-	// parse body
-	let body: CreateTransactionDto;
-	try {
-		body = (await req.json()) as CreateTransactionDto;
-	} catch (e) {
-		return toErrorResponse(new Error("Invalid JSON body"));
-	}
-
-	// create new transaction (use session.user.id)
-	try {
-		const transaction = await createTransaction(session.user.id, body);
-		return jsonResponse(transaction, 201);
-	} catch (e) {
-		return toErrorResponse(e);
-	}
+    const transaction = await createTransaction(userId, {
+      ...body,
+      occurredAt: body.occurredAt ? new Date(body.occurredAt) : undefined,
+    });
+    return jsonResponse(transaction, 201);
+  });
 }
 
-// GET /api/transactions?ledgerId=...&period=monthly|yearly&date=YYYY-MM|YYYY
 export async function GET(req: Request) {
-  	const session = await getServerSession(authOptions);
-	if (!session?.user?.id) {
-    return toErrorResponse(new Error("Unauthorized"));
-  	}
+  return routeHandler(async () => {
+    const userId = await requireUserId();
+    const query = parseQuery(req, ListTransactionsQuerySchema);
 
-	const url = new URL(req.url);
-	const ledgerId = url.searchParams.get("ledgerId");
-	const period = (url.searchParams.get("period") ?? "monthly") as "monthly" | "yearly";
-	const date = url.searchParams.get("date") ?? undefined;
+    const range = resolveDateRange({ from: query.from, to: query.to });
 
-	if (!ledgerId) {
-		return toErrorResponse(new Error("ledgerId is required"));
-	}
-
-	try {
-		const transactions = await listTransactions(session.user.id, ledgerId, period, date);
-		return jsonResponse(transactions);
-	} catch (e) {
-		return toErrorResponse(e);
-	}
+    const transactions = await listTransactions(userId, query.ledgerId, range);
+    return jsonResponse(transactions);
+  });
 }

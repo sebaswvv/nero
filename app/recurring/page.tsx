@@ -71,7 +71,13 @@ const uiStyles = {
     border: "1px solid rgba(255,255,255,0.18)",
     background: "rgba(255,255,255,0.03)",
   } as React.CSSProperties,
-  list: { listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 } as React.CSSProperties,
+  list: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    display: "grid",
+    gap: 12,
+  } as React.CSSProperties,
   item: {
     padding: 12,
     borderRadius: 10,
@@ -81,9 +87,20 @@ const uiStyles = {
     background: "rgba(255,255,255,0.01)",
   } as React.CSSProperties,
   muted: { opacity: 0.8, fontSize: 13 } as React.CSSProperties,
-  versionList: { listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 6 } as React.CSSProperties,
+  versionList: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    display: "grid",
+    gap: 6,
+  } as React.CSSProperties,
   addVersionRow: { display: "flex", gap: 8, alignItems: "center" } as React.CSSProperties,
-  errorBox: { padding: 12, borderRadius: 10, border: "1px solid rgba(255,80,80,0.25)", background: "rgba(255,50,50,0.04)" } as React.CSSProperties,
+  errorBox: {
+    padding: 12,
+    borderRadius: 10,
+    border: "1px solid rgba(255,80,80,0.25)",
+    background: "rgba(255,50,50,0.04)",
+  } as React.CSSProperties,
 };
 
 export default function RecurringPage() {
@@ -172,7 +189,12 @@ export default function RecurringPage() {
     }
   }
 
-  async function addVersion(itemId: string, amountCents: number, setSubmitting: (v: boolean) => void, setLocalError: (s: string | null) => void) {
+  async function addVersion(
+    itemId: string,
+    amountCents: number,
+    setSubmitting: (v: boolean) => void,
+    setLocalError: (s: string | null) => void
+  ) {
     setSubmitting(true);
     setLocalError(null);
     try {
@@ -206,7 +228,9 @@ export default function RecurringPage() {
       <header style={uiStyles.headerCard}>
         <div>
           <h2 style={{ margin: 0 }}>Recurring items</h2>
-          <p style={{ margin: 0, opacity: 0.75 }}>Create and manage recurring items and versions.</p>
+          <p style={{ margin: 0, opacity: 0.75 }}>
+            Create and manage recurring items and versions.
+          </p>
         </div>
         <div style={{ textAlign: "right" }}>
           {/* small space for potential summary or actions */}
@@ -219,15 +243,27 @@ export default function RecurringPage() {
         <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
           <label style={{ display: "grid", gap: 6 }}>
             <span style={{ fontSize: 13, opacity: 0.8 }}>Ledger</span>
-            <select value={selectedLedger ?? ""} onChange={(e) => setSelectedLedger(e.target.value)} style={uiStyles.select}>
+            <select
+              value={selectedLedger ?? ""}
+              onChange={(e) => setSelectedLedger(e.target.value)}
+              style={uiStyles.select}
+            >
               <option value="">Select ledger</option>
-              {ledgers.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              {ledgers.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
             </select>
           </label>
 
           <div style={{ flex: 1 }} />
 
-          <button onClick={() => loadItems()} disabled={!selectedLedger} style={uiStyles.buttonPrimary}>
+          <button
+            onClick={() => loadItems()}
+            disabled={!selectedLedger}
+            style={uiStyles.buttonPrimary}
+          >
             Refresh
           </button>
         </div>
@@ -236,17 +272,32 @@ export default function RecurringPage() {
           <div style={{ display: "grid", gap: 6 }}>
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontSize: 13, opacity: 0.8 }}>Name</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} style={uiStyles.input} />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={uiStyles.input}
+              />
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontSize: 13, opacity: 0.8 }}>Amount (cents)</span>
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value === "" ? "" : parseInt(e.target.value, 10))} style={uiStyles.input} />
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) =>
+                  setAmount(e.target.value === "" ? "" : parseInt(e.target.value, 10))
+                }
+                style={uiStyles.input}
+              />
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
               <span style={{ fontSize: 13, opacity: 0.8 }}>Direction</span>
-              <select value={direction} onChange={(e) => setDirection(e.target.value as any)} style={uiStyles.select}>
+              <select
+                value={direction}
+                onChange={(e) => setDirection(e.target.value as any)}
+                style={uiStyles.select}
+              >
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
               </select>
@@ -268,13 +319,19 @@ export default function RecurringPage() {
         <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <button
             onClick={() => setSelectedTab("expenses")}
-            style={{ ...(uiStyles.buttonGhost as any), ...(selectedTab === "expenses" ? uiStyles.tabActive : {}) }}
+            style={{
+              ...(uiStyles.buttonGhost as any),
+              ...(selectedTab === "expenses" ? uiStyles.tabActive : {}),
+            }}
           >
             Expenses
           </button>
           <button
             onClick={() => setSelectedTab("income")}
-            style={{ ...(uiStyles.buttonGhost as any), ...(selectedTab === "income" ? uiStyles.tabActive : {}) }}
+            style={{
+              ...(uiStyles.buttonGhost as any),
+              ...(selectedTab === "income" ? uiStyles.tabActive : {}),
+            }}
           >
             Income
           </button>
@@ -291,10 +348,14 @@ export default function RecurringPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
                   <div>
                     <strong>{it.name}</strong>
-                    <div style={uiStyles.muted}>{it.frequency} • {it.direction} • {it.isActive ? "active" : "inactive"}</div>
+                    <div style={uiStyles.muted}>
+                      {it.frequency} • {it.direction} • {it.isActive ? "active" : "inactive"}
+                    </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div style={uiStyles.muted}>{it.versions[0] ? `${(it.versions[0].amountCents / 100).toFixed(2)}` : "-"}</div>
+                    <div style={uiStyles.muted}>
+                      {it.versions[0] ? `${(it.versions[0].amountCents / 100).toFixed(2)}` : "-"}
+                    </div>
                   </div>
                 </div>
 
@@ -302,15 +363,19 @@ export default function RecurringPage() {
                   <div style={{ display: "grid", gap: 6 }}>
                     <strong style={{ fontSize: 13 }}>Versions</strong>
                     <ul style={uiStyles.versionList}>
-                      {it.versions.map(v => (
+                      {it.versions.map((v) => (
                         <li key={v.id} style={{ fontSize: 13, opacity: 0.9 }}>
-                          {new Date(v.validFrom).toISOString().slice(0,10)} — {v.validTo ? new Date(v.validTo).toISOString().slice(0,10) : "∞"} • {(v.amountCents/100).toFixed(2)}
+                          {new Date(v.validFrom).toISOString().slice(0, 10)} —{" "}
+                          {v.validTo ? new Date(v.validTo).toISOString().slice(0, 10) : "∞"} •{" "}
+                          {(v.amountCents / 100).toFixed(2)}
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <AddVersionRow onAdd={(amountCents, s, setErr) => addVersion(it.id, amountCents, s, setErr)} />
+                  <AddVersionRow
+                    onAdd={(amountCents, s, setErr) => addVersion(it.id, amountCents, s, setErr)}
+                  />
                 </div>
               </li>
             ))}
@@ -322,21 +387,40 @@ export default function RecurringPage() {
 }
 
 // Update AddVersionRow to use shared styles
-function AddVersionRow({ onAdd }: { onAdd: (amountCents: number, setSubmitting: (v: boolean) => void, setError: (s: string | null) => void) => void }) {
+function AddVersionRow({
+  onAdd,
+}: {
+  onAdd: (
+    amountCents: number,
+    setSubmitting: (v: boolean) => void,
+    setError: (s: string | null) => void
+  ) => void;
+}) {
   const [amount, setAmount] = useState<number | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   return (
     <div style={uiStyles.addVersionRow}>
-      <input placeholder="amount (cents)" value={amount} onChange={(e) => setAmount(e.target.value === "" ? "" : parseInt(e.target.value, 10))} style={{ ...uiStyles.input, flex: 1 }} />
-      <button onClick={() => {
-        if (typeof amount !== "number" || !Number.isInteger(amount) || amount <= 0) {
-          setLocalError("Enter positive integer cents");
-          return;
-        }
-        onAdd(amount as number, setSubmitting, setLocalError);
-      }} disabled={submitting} style={uiStyles.buttonPrimary}>Add version</button>
+      <input
+        placeholder="amount (cents)"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value === "" ? "" : parseInt(e.target.value, 10))}
+        style={{ ...uiStyles.input, flex: 1 }}
+      />
+      <button
+        onClick={() => {
+          if (typeof amount !== "number" || !Number.isInteger(amount) || amount <= 0) {
+            setLocalError("Enter positive integer cents");
+            return;
+          }
+          onAdd(amount as number, setSubmitting, setLocalError);
+        }}
+        disabled={submitting}
+        style={uiStyles.buttonPrimary}
+      >
+        Add version
+      </button>
       {localError && <div style={{ color: "tomato", fontSize: 13 }}>{localError}</div>}
     </div>
   );

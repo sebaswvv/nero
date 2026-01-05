@@ -75,9 +75,7 @@ export default function LedgersPage() {
     >
       <header style={{ display: "grid", gap: 6 }}>
         <h2 style={{ margin: 0 }}>Ledgers</h2>
-        <p style={{ margin: 0, opacity: 0.75 }}>
-          View your ledgers and create a new one.
-        </p>
+        <p style={{ margin: 0, opacity: 0.75 }}>View your ledgers and create a new one.</p>
       </header>
 
       {error && (

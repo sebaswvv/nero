@@ -4,7 +4,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import crypto from "crypto";
 
-const allowedEmails = process.env.ALLOWED_EMAILS?.split(",").map(e => e.trim().toLowerCase()) ?? [];
+const allowedEmails =
+  process.env.ALLOWED_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ?? [];
 
 // NextAuth handler
 const handler = NextAuth({
@@ -20,8 +21,7 @@ const handler = NextAuth({
   callbacks: {
     async signIn({ profile }) {
       const email = (profile as { email?: string } | null)?.email?.toLowerCase();
-      if (!email) 
-        return false;
+      if (!email) return false;
       return allowedEmails.includes(email);
     },
     async session({ session, user }) {

@@ -1,50 +1,28 @@
 export const runtime = "nodejs";
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
+import { jsonResponse } from "@/lib/http";
+import { routeHandler, parseJsonBody, parseQuery } from "@/lib/validation";
+import { requireUserId } from "@/lib/auth";
 import { createRecurringItem, listRecurringItems } from "@/services/recurring.service";
-import { toErrorResponse, jsonResponse } from "@/lib/http";
-import { CreateRecurringDto } from "@/types/dtos/create-recurring.dto";
+import { CreateRecurringItemBodySchema } from "@/schemas/recurring.schemas";
+import { ListTransactionsQuerySchema } from "@/schemas/transaction.schemas";
 
-// POST /api/recurring-items
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return toErrorResponse(new Error("Unauthorized"));
-  }
+  return routeHandler(async () => {
+    const userId = await requireUserId();
+    const body = await parseJsonBody(req, CreateRecurringItemBodySchema);
 
-  let body: CreateRecurringDto;
-  try {
-    body = (await req.json()) as CreateRecurringDto;
-  } catch (e) {
-    return toErrorResponse(new Error("Invalid JSON body"));
-  }
-
-  try {
-    const item = await createRecurringItem(session.user.id, body);
+    const item = await createRecurringItem(userId, body);
     return jsonResponse(item, 201);
-  } catch (e) {
-    return toErrorResponse(e);
-  }
+  });
 }
 
-// GET /api/recurring-items?ledgerId=...
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return toErrorResponse(new Error("Unauthorized"));
-  }
+  return routeHandler(async () => {
+    const userId = await requireUserId();
+    const { ledgerId } = parseQuery(req, ListTransactionsQuerySchema);
 
-  const url = new URL(req.url);
-  const ledgerId = url.searchParams.get("ledgerId");
-  if (!ledgerId) {
-    return toErrorResponse(new Error("ledgerId is required"));
-  }
-
-  try {
-    const items = await listRecurringItems(session.user.id, ledgerId);
+    const items = await listRecurringItems(userId, ledgerId);
     return jsonResponse(items);
-  } catch (e) {
-    return toErrorResponse(e);
-  }
-  }
+  });
+}
