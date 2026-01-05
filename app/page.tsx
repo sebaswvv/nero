@@ -45,7 +45,9 @@ export default async function Home() {
           >
             {user ? (
               <>
-                <div style={{ fontSize: 13, opacity: 0.85 }}>{user.name ?? user.email}</div>
+                <div style={{ fontSize: 13, opacity: 0.85 }}>
+                  {user.name ?? user.email}
+                </div>
                 <Link
                   href="/api/auth/signout"
                   style={{
@@ -125,6 +127,20 @@ export default async function Home() {
               }}
             >
               Transactions
+            </Link>
+
+            <Link
+              href="/analytics"
+              style={{
+                padding: "12px",
+                textAlign: "center",
+                borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)",
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              Analytics
             </Link>
           </nav>
         )}
