@@ -6,22 +6,15 @@ import type { CreateTransactionBody } from "@/schemas/transaction.schemas";
 
 type DateRange = { from: Date; to: Date };
 
-type CreateTransactionInput = Omit<CreateTransactionBody, "occurredAt"> & {
-  occurredAt?: Date;
-};
-
-export async function createTransaction(userId: string, body: CreateTransactionInput) {
+export async function createTransaction(userId: string, body: CreateTransactionBody) {
   await requireLedgerAccess(userId, body.ledgerId);
-
-  // set occurredAt to now if not provided
-  const occurredAt = body.occurredAt ?? new Date();
 
   try {
     return await prisma.transaction.create({
       data: {
         ledgerId: body.ledgerId,
         userId,
-        occurredAt,
+        occurredAt: body.occurredAt ?? new Date(),
         direction: body.direction,
         amountCents: body.amountCents,
         category: body.category,

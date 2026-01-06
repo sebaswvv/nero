@@ -45,9 +45,7 @@ export default async function Home() {
           >
             {user ? (
               <>
-                <div style={{ fontSize: 13, opacity: 0.85 }}>
-                  {user.name ?? user.email}
-                </div>
+                <div style={{ fontSize: 13, opacity: 0.85 }}>{user.name ?? user.email}</div>
                 <Link
                   href="/api/auth/signout"
                   style={{

@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 export async function GET() {
   return routeHandler(async () => {
     const userId = await requireUserId();
-    
+
     const ledgers = await listLedgers(userId);
     return jsonResponse(ledgers);
   });

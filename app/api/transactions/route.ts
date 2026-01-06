@@ -22,18 +22,13 @@ export async function POST(req: Request) {
         return jsonResponse({ error: "Invalid API key" }, 401);
       }
       userId = id;
-    }
-    else {
+    } else {
       userId = await requireUserId();
     }
 
-
     const body = await parseJsonBody(req, CreateTransactionBodySchema);
 
-    const transaction = await createTransaction(userId, {
-      ...body,
-      occurredAt: body.occurredAt ? new Date(body.occurredAt) : undefined,
-    });
+    const transaction = await createTransaction(userId, body);
     return jsonResponse(transaction, 201);
   });
 }

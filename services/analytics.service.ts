@@ -8,91 +8,72 @@ export async function getExpensesSummary(
 ) {
   await requireLedgerAccess(userId, ledgerId);
 
-  // variable expenses (transactions)
-  const transactions = await prisma.transaction.findMany({
+  // get variable expenses grouped by category
+  const groupedExpenses = await prisma.transaction.groupBy({
+    by: ["category"],
     where: {
-      ledgerId: ledgerId,
+      ledgerId,
       direction: "expense",
       occurredAt: {
         gte: range.from,
         lte: range.to,
       },
     },
-    select: {
-      amountCents: true,
-      category: true,
-    },
+    _sum: { amountCents: true },
+    _count: { _all: true },
   });
 
+  const perCategory: Record<string, number> = {};
   let totalExpensesTransactionsCents = 0;
   let totalExpenseTransactions = 0;
 
-  const perCategory: Record<string, number> = {};
+  for (const group of groupedExpenses) {
+    const category = group.category;
+    const amount = group._sum?.amountCents ?? 0;
+    const count = group._count?._all ?? 0;
 
-  for (const transaction of transactions) {
-    // total amount
-    totalExpensesTransactionsCents = totalExpensesTransactionsCents + transaction.amountCents;
-
-    // count transactions
-    totalExpenseTransactions = totalExpenseTransactions + 1;
-
-    // per category
-    const category = transaction.category;
-
-    if (perCategory[category] === undefined) {
-      perCategory[category] = 0;
-    }
-
-    perCategory[category] = perCategory[category] + transaction.amountCents;
+    perCategory[category] = amount;
+    totalExpensesTransactionsCents = totalExpensesTransactionsCents + amount;
+    totalExpenseTransactions = totalExpenseTransactions + count;
   }
 
-  // fixed expenses (recurring items)
+  // get active recurring expenses within the date range
   const recurringItems = await prisma.recurringItem.findMany({
     where: {
-      ledgerId: ledgerId,
+      ledgerId,
       direction: "expense",
       isActive: true,
-      frequency: "monthly",
     },
-    include: {
+    select: {
       versions: {
-        orderBy: { validFrom: "desc" },
-        select: {
-          amountCents: true,
-          validFrom: true,
-          validTo: true,
+        where: {
+          AND: [
+            {
+              validFrom: { lte: range.to },
+            },
+            {
+              OR: [{ validTo: null }, { validTo: { gte: range.from } }],
+            },
+          ],
         },
+        orderBy: { validFrom: "desc" },
+        select: { amountCents: true },
+        take: 1,
       },
     },
   });
 
+  // sum up the amounts from the latest active versions of recurring items
   let totalRecurringExpensesCents = 0;
-
-  // calculate total recurring expenses within the date range
   for (const item of recurringItems) {
-    let hasActiveVersion = false;
-    let activeAmountCents = 0;
-
-    // find the version that is active within the date range
-    for (const version of item.versions) {
-      const startsBeforeRangeEnd = version.validFrom <= range.to;
-      const endsAfterRangeStart = version.validTo === null || version.validTo >= range.from;
-
-      if (startsBeforeRangeEnd && endsAfterRangeStart) {
-        hasActiveVersion = true;
-        activeAmountCents = version.amountCents;
-        break;
-      }
-    }
-
-    if (hasActiveVersion) {
-      totalRecurringExpensesCents = totalRecurringExpensesCents + activeAmountCents;
+    if (item.versions.length > 0) {
+      totalRecurringExpensesCents += item.versions[0].amountCents;
     }
   }
 
-
-  // totals
+  // calculate total expenses
   const totalExpensesCents = totalExpensesTransactionsCents + totalRecurringExpensesCents;
+
   return {
     totalExpensesCents,
     totalExpensesTransactionsCents,

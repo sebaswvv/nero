@@ -108,9 +108,7 @@ export default function AnalyticsPage() {
     >
       <header>
         <h2 style={{ margin: 0 }}>Analytics</h2>
-        <p style={{ margin: 0, opacity: 0.75 }}>
-          Overview of expenses for a selected period.
-        </p>
+        <p style={{ margin: 0, opacity: 0.75 }}>Overview of expenses for a selected period.</p>
       </header>
 
       {error && (
@@ -137,10 +135,7 @@ export default function AnalyticsPage() {
           flexWrap: "wrap",
         }}
       >
-        <select
-          value={selectedLedger ?? ""}
-          onChange={(e) => setSelectedLedger(e.target.value)}
-        >
+        <select value={selectedLedger ?? ""} onChange={(e) => setSelectedLedger(e.target.value)}>
           <option value="">Select ledger</option>
           {ledgers.map((l) => (
             <option key={l.id} value={l.id}>
@@ -150,13 +145,11 @@ export default function AnalyticsPage() {
         </select>
 
         <label>
-          From{" "}
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          From <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         </label>
 
         <label>
-          To{" "}
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          To <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
         </label>
 
         <button onClick={loadSummary} disabled={!selectedLedger}>

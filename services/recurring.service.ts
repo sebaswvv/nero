@@ -10,14 +10,6 @@ import type {
 export async function createRecurringItem(userId: string, body: CreateRecurringItemBody) {
   await requireLedgerAccess(userId, body.ledgerId);
 
-  // validate dates
-  const validFrom = body.validFrom ? new Date(body.validFrom) : new Date();
-  const validTo = body.validTo ? new Date(body.validTo) : null;
-
-  if (validTo && validFrom.getTime() > validTo.getTime()) {
-    throw new BadRequestError("INVALID_RANGE", "validFrom must be before validTo");
-  }
-
   try {
     return await prisma.recurringItem.create({
       data: {
@@ -30,8 +22,8 @@ export async function createRecurringItem(userId: string, body: CreateRecurringI
         versions: {
           create: {
             amountCents: body.amountCents,
-            validFrom,
-            validTo,
+            validFrom: body.validFrom ? new Date(body.validFrom) : new Date(),
+            validTo: body.validTo ? new Date(body.validTo) : null,
             createdById: userId,
           },
         },
