@@ -34,7 +34,7 @@ const CATEGORIES = [
 ];
 
 /* =======================
-   Date utils (LOCAL!)
+   Date utils (LOCAL)
 ======================= */
 
 function toDateInputValue(date: Date): string {
@@ -66,8 +66,8 @@ export default function TransactionsPage() {
   const [ledgers, setLedgers] = useState<Ledger[]>([]);
   const [selectedLedger, setSelectedLedger] = useState<string>("");
 
-  const [fromDate, setFromDate] = useState<string>(startOfCurrentMonth());
-  const [toDate, setToDate] = useState<string>(endOfCurrentMonth());
+  const [fromDate, setFromDate] = useState(startOfCurrentMonth());
+  const [toDate, setToDate] = useState(endOfCurrentMonth());
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,7 +165,6 @@ export default function TransactionsPage() {
         throw new Error(err?.message ?? "Failed to create transaction");
       }
 
-      // reset form
       setAmountEur("");
       setDescription("");
       setCategory(CATEGORIES[0]);
@@ -191,63 +190,7 @@ export default function TransactionsPage() {
 
         {error && <div className="text-red-500">{error}</div>}
 
-        <div className="flex flex-wrap gap-4 items-end">
-          <select
-            value={selectedLedger}
-            onChange={e => setSelectedLedger(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-          >
-            {ledgers.map(l => (
-              <option key={l.id} value={l.id}>{l.name}</option>
-            ))}
-          </select>
-
-          <input
-            type="date"
-            value={fromDate}
-            onChange={e => setFromDate(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
-
-          <input
-            type="date"
-            value={toDate}
-            onChange={e => setToDate(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
-        </div>
-
-        {loading ? (
-          <div>Loading…</div>
-        ) : transactions.length === 0 ? (
-          <div>No transactions found.</div>
-        ) : (
-          <table className="w-full border border-gray-700 border-collapse">
-            <thead className="bg-gray-800">
-              <tr>
-                <th className="p-2 text-left">Date</th>
-                <th className="p-2 text-left">Category</th>
-                <th className="p-2 text-left">Description</th>
-                <th className="p-2 text-center">Dir</th>
-                <th className="p-2 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map(tx => (
-                <tr key={tx.id} className="odd:bg-gray-900">
-                  <td className="p-2">{new Date(tx.occurredAt).toLocaleDateString()}</td>
-                  <td className="p-2 capitalize">{tx.category.replace(/_/g, " ")}</td>
-                  <td className="p-2">{tx.description ?? "-"}</td>
-                  <td className="p-2 text-center">{tx.direction}</td>
-                  <td className="p-2 text-right">
-                    {tx.direction === "expense" ? "-" : "+"}€ {tx.amountEur}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
+        {/* CREATE FORM (TOP) */}
         <form onSubmit={handleCreate} className="border border-gray-700 rounded p-4 space-y-4">
           <h3 className="text-lg font-medium">Create transaction</h3>
 
@@ -299,6 +242,65 @@ export default function TransactionsPage() {
             Create
           </button>
         </form>
+
+        {/* FILTERS */}
+        <div className="flex flex-wrap gap-4 items-end">
+          <select
+            value={selectedLedger}
+            onChange={e => setSelectedLedger(e.target.value)}
+            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
+          >
+            {ledgers.map(l => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </select>
+
+          <input
+            type="date"
+            value={fromDate}
+            onChange={e => setFromDate(e.target.value)}
+            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
+          />
+
+          <input
+            type="date"
+            value={toDate}
+            onChange={e => setToDate(e.target.value)}
+            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
+          />
+        </div>
+
+        {/* TABLE */}
+        {loading ? (
+          <div>Loading…</div>
+        ) : transactions.length === 0 ? (
+          <div>No transactions found.</div>
+        ) : (
+          <table className="w-full border border-gray-700 border-collapse">
+            <thead className="bg-gray-800">
+              <tr>
+                <th className="p-2 text-left">Date</th>
+                <th className="p-2 text-left">Category</th>
+                <th className="p-2 text-left">Description</th>
+                <th className="p-2 text-center">Dir</th>
+                <th className="p-2 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map(tx => (
+                <tr key={tx.id} className="odd:bg-gray-900">
+                  <td className="p-2">{new Date(tx.occurredAt).toLocaleDateString()}</td>
+                  <td className="p-2 capitalize">{tx.category.replace(/_/g, " ")}</td>
+                  <td className="p-2">{tx.description ?? "-"}</td>
+                  <td className="p-2 text-center">{tx.direction}</td>
+                  <td className="p-2 text-right">
+                    {tx.direction === "expense" ? "-" : "+"}€ {tx.amountEur}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

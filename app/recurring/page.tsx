@@ -26,6 +26,8 @@ type RecurringItem = {
   versions: RecurringVersion[];
 };
 
+type DirectionFilter = "all" | "expense" | "income";
+
 /* =======================
    Utils
 ======================= */
@@ -51,20 +53,19 @@ export default function RecurringPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [filter, setFilter] = useState<DirectionFilter>("all");
+
   // create item form
   const [name, setName] = useState("");
   const [amountEur, setAmountEur] = useState("");
   const [direction, setDirection] = useState<"expense" | "income">("expense");
-  const [isActive, setIsActive] = useState(true);
   const [validFrom, setValidFrom] = useState(startOfCurrentMonth());
-  const [validTo, setValidTo] = useState("");
   const [creating, setCreating] = useState(false);
 
   // version form
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [versionAmount, setVersionAmount] = useState("");
   const [versionValidFrom, setVersionValidFrom] = useState(startOfCurrentMonth());
-  const [versionValidTo, setVersionValidTo] = useState("");
   const [addingVersion, setAddingVersion] = useState(false);
 
   /* =======================
@@ -89,13 +90,6 @@ export default function RecurringPage() {
   useEffect(() => {
     if (!selectedLedger) return;
     fetchItems(selectedLedger);
-
-    setName("");
-    setAmountEur("");
-    setDirection("expense");
-    setIsActive(true);
-    setValidFrom(startOfCurrentMonth());
-    setValidTo("");
   }, [selectedLedger]);
 
   async function fetchItems(ledgerId: string) {
@@ -130,21 +124,17 @@ export default function RecurringPage() {
     setError(null);
 
     try {
-      const body: any = {
-        ledgerId: selectedLedger,
-        name: name.trim(),
-        amountEur: amountEur.trim(),
-        direction,
-        isActive,
-        validFrom,
-      };
-      if (validTo) body.validTo = validTo;
-
       const res = await fetch("/api/recurring-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ledgerId: selectedLedger,
+          name: name.trim(),
+          amountEur: amountEur.trim(),
+          direction,
+          validFrom,
+        }),
       });
 
       if (!res.ok) {
@@ -157,7 +147,6 @@ export default function RecurringPage() {
       setAmountEur("");
       setDirection("expense");
       setValidFrom(startOfCurrentMonth());
-      setValidTo("");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -179,21 +168,15 @@ export default function RecurringPage() {
     setError(null);
 
     try {
-      const body: any = {
-        amountEur: versionAmount.trim(),
-        validFrom: versionValidFrom,
-      };
-      if (versionValidTo) body.validTo = versionValidTo;
-
-      const res = await fetch(
-        `/api/recurring-items/${itemId}/versions`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(body),
-        }
-      );
+      const res = await fetch(`/api/recurring-items/${itemId}/versions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          amountEur: versionAmount.trim(),
+          validFrom: versionValidFrom,
+        }),
+      });
 
       if (!res.ok) {
         const err = await res.json();
@@ -204,7 +187,6 @@ export default function RecurringPage() {
       setEditingItemId(null);
       setVersionAmount("");
       setVersionValidFrom(startOfCurrentMonth());
-      setVersionValidTo("");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -213,19 +195,30 @@ export default function RecurringPage() {
   }
 
   /* =======================
+     Filtered items
+  ======================= */
+
+  const filteredItems = items.filter(item => {
+    if (filter === "all") return true;
+    return item.direction === filter;
+  });
+
+  /* =======================
      Render
   ======================= */
 
   return (
     <div className="min-h-screen p-6 flex justify-center">
       <div className="w-full max-w-4xl space-y-6">
+
         <h2 className="text-2xl font-semibold">Recurring items</h2>
 
         {error && <div className="text-red-500">{error}</div>}
 
+        {/* Ledger selector */}
         <select
           value={selectedLedger}
-          onChange={(e) => setSelectedLedger(e.target.value)}
+          onChange={e => setSelectedLedger(e.target.value)}
           className="px-3 py-2 rounded border border-gray-600 bg-transparent"
         >
           {ledgers.map(l => (
@@ -233,66 +226,9 @@ export default function RecurringPage() {
           ))}
         </select>
 
-        {loading ? (
-          <div>Loading…</div>
-        ) : (
-          <div className="space-y-4">
-            {items.map(item => {
-              const v = item.versions[0];
-              return (
-                <div key={item.id} className="border border-gray-700 rounded p-4 space-y-2">
-                  <div className="flex justify-between">
-                    <div>
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm opacity-70">
-                        {v?.amountEur} € · {item.direction}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setEditingItemId(item.id)}
-                      className="text-sm text-blue-400"
-                    >
-                      Add version
-                    </button>
-                  </div>
-
-                  {editingItemId === item.id && (
-                    <div className="grid grid-cols-4 gap-2 pt-2">
-                      <input
-                        placeholder="Amount"
-                        value={versionAmount}
-                        onChange={e => setVersionAmount(e.target.value)}
-                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
-                      />
-                      <input
-                        type="date"
-                        value={versionValidFrom}
-                        onChange={e => setVersionValidFrom(e.target.value)}
-                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
-                      />
-                      <input
-                        type="date"
-                        value={versionValidTo}
-                        onChange={e => setVersionValidTo(e.target.value)}
-                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
-                      />
-                      <button
-                        onClick={() => handleAddVersion(item.id)}
-                        disabled={addingVersion}
-                        className="bg-blue-600 rounded px-2 py-1 disabled:opacity-50"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="border border-gray-700 rounded p-4 space-y-4">
-          <h3 className="text-lg font-medium">Create recurring item</h3>
+        {/* Create form (TOP) */}
+        <form onSubmit={handleCreate} className="border border-gray-700 rounded p-4 space-y-3">
+          <h3 className="font-medium">Create recurring item</h3>
 
           <input
             placeholder="Name"
@@ -310,7 +246,7 @@ export default function RecurringPage() {
 
           <select
             value={direction}
-            onChange={e => setDirection(e.target.value as "expense" | "income")}
+            onChange={e => setDirection(e.target.value as any)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           >
             <option value="expense">Expense</option>
@@ -332,6 +268,76 @@ export default function RecurringPage() {
             Create
           </button>
         </form>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2">
+          {(["all", "expense", "income"] as DirectionFilter[]).map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded border ${
+                filter === f
+                  ? "bg-blue-600 border-blue-600"
+                  : "border-gray-600 opacity-70"
+              }`}
+            >
+              {f === "all" ? "All" : f}
+            </button>
+          ))}
+        </div>
+
+        {/* Items */}
+        {loading ? (
+          <div>Loading…</div>
+        ) : (
+          <div className="space-y-4">
+            {filteredItems.map(item => {
+              const v = item.versions[0];
+              return (
+                <div key={item.id} className="border border-gray-700 rounded p-4">
+                  <div className="flex justify-between">
+                    <div>
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-sm opacity-70">
+                        {v?.amountEur} € · {item.direction}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setEditingItemId(item.id)}
+                      className="text-sm text-blue-400"
+                    >
+                      Add version
+                    </button>
+                  </div>
+
+                  {editingItemId === item.id && (
+                    <div className="grid grid-cols-3 gap-2 pt-3">
+                      <input
+                        placeholder="Amount"
+                        value={versionAmount}
+                        onChange={e => setVersionAmount(e.target.value)}
+                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
+                      />
+                      <input
+                        type="date"
+                        value={versionValidFrom}
+                        onChange={e => setVersionValidFrom(e.target.value)}
+                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
+                      />
+                      <button
+                        onClick={() => handleAddVersion(item.id)}
+                        disabled={addingVersion}
+                        className="bg-blue-600 rounded px-2 py-1 disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
