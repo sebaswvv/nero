@@ -16,7 +16,6 @@ export async function GET(req: Request) {
 
     const range = resolveDateRange({ from: query.from, to: query.to });
 
-    // call service to get expenses summary
     const summary = await getExpensesSummary(userId, query.ledgerId, range);
 
     return jsonResponse(summary);
