@@ -16,6 +16,5 @@ export type CreateTransactionDto = {
   description?: string;
   merchant?: string;
   occurredAt?: string;
-  idempotencyKey?: string;
   direction?: "expense" | "income";
 };

@@ -138,14 +138,12 @@ model Transaction {
   description String?
 
   merchant       String?
-  idempotencyKey String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   ledger Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([ledgerId, idempotencyKey])
   @@index([ledgerId, occurredAt])
 }
 

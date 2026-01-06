@@ -241,11 +241,6 @@ export default function TransactionsPage() {
     setTxError(null);
 
     try {
-      const idempotencyKey =
-        typeof crypto !== "undefined" && (crypto as any).randomUUID
-          ? (crypto as any).randomUUID()
-          : `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
-
       const res = await fetch("/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -257,7 +252,6 @@ export default function TransactionsPage() {
           merchant: txMerchant || undefined,
           description: txDescription || undefined,
           occurredAt: txOccurredAt, // YYYY-MM-DD
-          idempotencyKey,
         }),
       });
 

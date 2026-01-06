@@ -13,19 +13,6 @@ type CreateTransactionInput = Omit<CreateTransactionBody, "occurredAt"> & {
 export async function createTransaction(userId: string, body: CreateTransactionInput) {
   await requireLedgerAccess(userId, body.ledgerId);
 
-  // handle idempotency key if any
-  if (body.idempotencyKey) {
-    const existing = await prisma.transaction.findUnique({
-      where: {
-        ledgerId_idempotencyKey: {
-          ledgerId: body.ledgerId,
-          idempotencyKey: body.idempotencyKey,
-        },
-      },
-    });
-    if (existing) return existing;
-  }
-
   // set occurredAt to now if not provided
   const occurredAt = body.occurredAt ?? new Date();
 
@@ -40,7 +27,6 @@ export async function createTransaction(userId: string, body: CreateTransactionI
         category: body.category,
         description: body.description ?? null,
         merchant: body.merchant ?? null,
-        idempotencyKey: body.idempotencyKey ?? null,
       },
     });
   } catch (e) {

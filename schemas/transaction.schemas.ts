@@ -20,8 +20,7 @@ export const CreateTransactionBodySchema = z.object({
   description: z.string().optional(),
   merchant: z.string().optional(),
   occurredAt: OccurredAtSchema.optional().optional(),
-  idempotencyKey: z.string().min(1).optional(),
-  direction: DirectionSchema.optional().default("expense"),
+ direction: DirectionSchema.optional().default("expense"),
 });
 export type CreateTransactionBody = z.infer<typeof CreateTransactionBodySchema>;
 
