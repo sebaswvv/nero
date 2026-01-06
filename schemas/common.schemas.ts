@@ -18,7 +18,10 @@ export const MoneyEurSchema = z
     const padded = (frac + "00").slice(0, 2);
     return `${whole}.${padded}`;
   })
-  .refine((v) => {
-    const asNumber = Number(v);
-    return Number.isFinite(asNumber) && asNumber > 0;
-  }, { message: "Amount must be greater than 0" });
+  .refine(
+    (v) => {
+      const asNumber = Number(v);
+      return Number.isFinite(asNumber) && asNumber > 0;
+    },
+    { message: "Amount must be greater than 0" }
+  );

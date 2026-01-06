@@ -24,13 +24,15 @@ export const CreateTransactionBodySchema = z.object({
 
 export type CreateTransactionBody = z.infer<typeof CreateTransactionBodySchema>;
 
-export const ListTransactionsQuerySchema = z.object({
-  ledgerId: IdSchema,
-  from: OccurredAtSchema.optional(),
-  to: OccurredAtSchema.optional(),
-}).refine(
-  (q) => !q.from || !q.to || q.from <= q.to,
-  { message: "from must be before to", path: ["to"] }
-);
+export const ListTransactionsQuerySchema = z
+  .object({
+    ledgerId: IdSchema,
+    from: OccurredAtSchema.optional(),
+    to: OccurredAtSchema.optional(),
+  })
+  .refine((q) => !q.from || !q.to || q.from <= q.to, {
+    message: "from must be before to",
+    path: ["to"],
+  });
 
 export type ListTransactionsQuery = z.infer<typeof ListTransactionsQuerySchema>;

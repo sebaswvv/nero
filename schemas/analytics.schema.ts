@@ -7,3 +7,10 @@ export const ExpensesSummaryQuerySchema = z.object({
   to: OccurredAtSchema,
 });
 export type ExpensesSummaryQuery = z.infer<typeof ExpensesSummaryQuerySchema>;
+
+export const IncomeSummaryQuerySchema = z.object({
+  ledgerId: IdSchema,
+  from: OccurredAtSchema,
+  to: OccurredAtSchema,
+});
+export type IncomeSummaryQuery = z.infer<typeof IncomeSummaryQuerySchema>;

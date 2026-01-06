@@ -1,5 +1,5 @@
 // 'use client' ensures this page runs on the client side so we can use React hooks
-'use client';
+"use client";
 
 import { useState, useEffect, FormEvent } from "react";
 
@@ -111,7 +111,10 @@ export default function LedgersPage() {
         )}
 
         {/* Create ledger form */}
-        <form onSubmit={handleCreateLedger} className="space-y-4 border border-gray-700 rounded p-4">
+        <form
+          onSubmit={handleCreateLedger}
+          className="space-y-4 border border-gray-700 rounded p-4"
+        >
           <h3 className="text-lg font-medium">Create new ledger</h3>
           {error && <div className="text-red-500">{error}</div>}
           <div className="flex flex-col gap-2">

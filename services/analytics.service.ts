@@ -94,3 +94,47 @@ export async function getExpensesSummary(
     totalRecurringExpensesEur: totalRecurringExpensesEur.toFixed(2),
   };
 }
+
+export async function getIncomeSummary(
+  userId: string,
+  ledgerId: string,
+  range: DateRange
+): Promise<{ totalIncomeEur: string }> {
+  await requireLedgerAccess(userId, ledgerId);
+
+  // get all income items from the ledger, within the date range
+  const income = await prisma.recurringItem.findMany({
+    where: {
+      ledgerId,
+      direction: "income",
+      isActive: true,
+    },
+    select: {
+      versions: {
+        where: {
+          AND: [
+            { validFrom: { lte: range.to } },
+            { OR: [{ validTo: null }, { validTo: { gte: range.from } }] },
+          ],
+        },
+        orderBy: { validFrom: "desc" },
+        select: { amountEur: true },
+        take: 1,
+      },
+    },
+  });
+
+  let totalIncomeEur = new Prisma.Decimal(0);
+  
+  // sum up the amounts of the latest active versions
+  for (const item of income) {  
+    const latestActiveVersion = item.versions[0];
+    if (!latestActiveVersion) continue;
+    
+    totalIncomeEur = totalIncomeEur.plus(latestActiveVersion.amountEur);
+  }
+  
+  return {  
+    totalIncomeEur: totalIncomeEur.toFixed(2),
+  };
+}

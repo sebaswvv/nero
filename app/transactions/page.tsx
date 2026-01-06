@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect, FormEvent } from "react";
 
@@ -197,37 +197,39 @@ export default function TransactionsPage() {
           <input
             placeholder="Amount (€)"
             value={amountEur}
-            onChange={e => setAmountEur(e.target.value)}
+            onChange={(e) => setAmountEur(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
           <select
             value={category}
-            onChange={e => setCategory(e.target.value)}
+            onChange={(e) => setCategory(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           >
-            {CATEGORIES.map(c => (
-              <option key={c} value={c}>{c.replace(/_/g, " ")}</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c.replace(/_/g, " ")}
+              </option>
             ))}
           </select>
 
           <input
             placeholder="Description"
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
           <input
             type="date"
             value={occurredAt}
-            onChange={e => setOccurredAt(e.target.value)}
+            onChange={(e) => setOccurredAt(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
           <select
             value={direction}
-            onChange={e => setDirection(e.target.value as any)}
+            onChange={(e) => setDirection(e.target.value as any)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           >
             <option value="expense">Expense</option>
@@ -247,25 +249,27 @@ export default function TransactionsPage() {
         <div className="flex flex-wrap gap-4 items-end">
           <select
             value={selectedLedger}
-            onChange={e => setSelectedLedger(e.target.value)}
+            onChange={(e) => setSelectedLedger(e.target.value)}
             className="px-3 py-2 rounded border border-gray-600 bg-transparent"
           >
-            {ledgers.map(l => (
-              <option key={l.id} value={l.id}>{l.name}</option>
+            {ledgers.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.name}
+              </option>
             ))}
           </select>
 
           <input
             type="date"
             value={fromDate}
-            onChange={e => setFromDate(e.target.value)}
+            onChange={(e) => setFromDate(e.target.value)}
             className="px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
           <input
             type="date"
             value={toDate}
-            onChange={e => setToDate(e.target.value)}
+            onChange={(e) => setToDate(e.target.value)}
             className="px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
         </div>
@@ -287,7 +291,7 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map(tx => (
+              {transactions.map((tx) => (
                 <tr key={tx.id} className="odd:bg-gray-900">
                   <td className="p-2">{new Date(tx.occurredAt).toLocaleDateString()}</td>
                   <td className="p-2 capitalize">{tx.category.replace(/_/g, " ")}</td>

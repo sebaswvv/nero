@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect, FormEvent } from "react";
 
@@ -198,7 +198,7 @@ export default function RecurringPage() {
      Filtered items
   ======================= */
 
-  const filteredItems = items.filter(item => {
+  const filteredItems = items.filter((item) => {
     if (filter === "all") return true;
     return item.direction === filter;
   });
@@ -210,7 +210,6 @@ export default function RecurringPage() {
   return (
     <div className="min-h-screen p-6 flex justify-center">
       <div className="w-full max-w-4xl space-y-6">
-
         <h2 className="text-2xl font-semibold">Recurring items</h2>
 
         {error && <div className="text-red-500">{error}</div>}
@@ -218,11 +217,13 @@ export default function RecurringPage() {
         {/* Ledger selector */}
         <select
           value={selectedLedger}
-          onChange={e => setSelectedLedger(e.target.value)}
+          onChange={(e) => setSelectedLedger(e.target.value)}
           className="px-3 py-2 rounded border border-gray-600 bg-transparent"
         >
-          {ledgers.map(l => (
-            <option key={l.id} value={l.id}>{l.name}</option>
+          {ledgers.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name}
+            </option>
           ))}
         </select>
 
@@ -233,20 +234,20 @@ export default function RecurringPage() {
           <input
             placeholder="Name"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
           <input
             placeholder="Amount (€)"
             value={amountEur}
-            onChange={e => setAmountEur(e.target.value)}
+            onChange={(e) => setAmountEur(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
           <select
             value={direction}
-            onChange={e => setDirection(e.target.value as any)}
+            onChange={(e) => setDirection(e.target.value as any)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           >
             <option value="expense">Expense</option>
@@ -256,7 +257,7 @@ export default function RecurringPage() {
           <input
             type="date"
             value={validFrom}
-            onChange={e => setValidFrom(e.target.value)}
+            onChange={(e) => setValidFrom(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
 
@@ -271,14 +272,12 @@ export default function RecurringPage() {
 
         {/* Filter tabs */}
         <div className="flex gap-2">
-          {(["all", "expense", "income"] as DirectionFilter[]).map(f => (
+          {(["all", "expense", "income"] as DirectionFilter[]).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`px-3 py-1 rounded border ${
-                filter === f
-                  ? "bg-blue-600 border-blue-600"
-                  : "border-gray-600 opacity-70"
+                filter === f ? "bg-blue-600 border-blue-600" : "border-gray-600 opacity-70"
               }`}
             >
               {f === "all" ? "All" : f}
@@ -291,7 +290,7 @@ export default function RecurringPage() {
           <div>Loading…</div>
         ) : (
           <div className="space-y-4">
-            {filteredItems.map(item => {
+            {filteredItems.map((item) => {
               const v = item.versions[0];
               return (
                 <div key={item.id} className="border border-gray-700 rounded p-4">
@@ -315,13 +314,13 @@ export default function RecurringPage() {
                       <input
                         placeholder="Amount"
                         value={versionAmount}
-                        onChange={e => setVersionAmount(e.target.value)}
+                        onChange={(e) => setVersionAmount(e.target.value)}
                         className="px-2 py-1 rounded border border-gray-600 bg-transparent"
                       />
                       <input
                         type="date"
                         value={versionValidFrom}
-                        onChange={e => setVersionValidFrom(e.target.value)}
+                        onChange={(e) => setVersionValidFrom(e.target.value)}
                         className="px-2 py-1 rounded border border-gray-600 bg-transparent"
                       />
                       <button
