@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isApiError } from "@/lib/errors";
+import { isApiError } from "@/lib/api/errors";
 
 // create error response
 export function toErrorResponse(err: unknown) {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DirectionSchema, OccurredAtSchema, IdSchema } from "./common.schemas";
+import { DirectionSchema, OccurredAtSchema, IdSchema, MoneyEurSchema } from "./common.schemas";
 
 export const TransactionCategorySchema = z.enum([
   "groceries",
@@ -15,18 +15,22 @@ export const TransactionCategorySchema = z.enum([
 
 export const CreateTransactionBodySchema = z.object({
   ledgerId: IdSchema,
-  amountCents: z.number().int().positive(),
+  amountEur: MoneyEurSchema,
   category: TransactionCategorySchema,
   description: z.string().optional(),
-  merchant: z.string().optional(),
-  occurredAt: OccurredAtSchema.optional().optional(),
+  occurredAt: OccurredAtSchema.optional(),
   direction: DirectionSchema.optional().default("expense"),
 });
+
 export type CreateTransactionBody = z.infer<typeof CreateTransactionBodySchema>;
 
 export const ListTransactionsQuerySchema = z.object({
   ledgerId: IdSchema,
   from: OccurredAtSchema.optional(),
   to: OccurredAtSchema.optional(),
-});
+}).refine(
+  (q) => !q.from || !q.to || q.from <= q.to,
+  { message: "from must be before to", path: ["to"] }
+);
+
 export type ListTransactionsQuery = z.infer<typeof ListTransactionsQuerySchema>;

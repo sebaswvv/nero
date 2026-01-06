@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 
-import { jsonResponse } from "@/lib/http";
-import { routeHandler, parseJsonBody, parseQuery } from "@/lib/validation";
-import { requireUserId } from "@/lib/auth";
+import { jsonResponse } from "@/lib/api/http";
+import { routeHandler, parseJsonBody, parseQuery } from "@/lib/api/validation";
+import { requireUserId } from "@/lib/api/auth";
 import { createRecurringItem, listRecurringItems } from "@/services/recurring.service";
 import { CreateRecurringItemBodySchema } from "@/schemas/recurring.schemas";
 import { ListTransactionsQuerySchema } from "@/schemas/transaction.schemas";

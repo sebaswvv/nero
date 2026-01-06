@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 
-import { jsonResponse } from "@/lib/http";
-import { routeHandler, parseJsonBody } from "@/lib/validation";
-import { requireUserId } from "@/lib/auth";
+import { jsonResponse } from "@/lib/api/http";
+import { routeHandler, parseJsonBody } from "@/lib/api/validation";
+import { requireUserId } from "@/lib/api/auth";
 import { CreateLedgerBodySchema } from "@/schemas/ledger.schemas";
 import { createLedger, listLedgers } from "@/services/ledger.service";
 

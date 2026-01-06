@@ -1,7 +1,5 @@
-// prisma/schema.prisma
-
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
   engineType = "library"
 }
 
@@ -29,10 +27,6 @@ enum Category {
   other
   gifts
   incidental_income
-}
-
-enum Frequency {
-  monthly
 }
 
 // --------------------
@@ -115,7 +109,7 @@ model LedgerMember {
   id       String @id @default(cuid())
   ledgerId String
   userId   String
-  role     String @default("editor") 
+  role     String @default("editor")
 
   ledger Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -133,13 +127,14 @@ model Transaction {
 
   occurredAt  DateTime
   direction   TransactionDirection
-  amountCents Int
+
+  amountEur   Decimal @db.Decimal(12, 2)
+
   category    Category
   description String?
 
-  merchant       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   ledger Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -154,8 +149,7 @@ model RecurringItem {
 
   name      String
   direction TransactionDirection
-  frequency Frequency            @default(monthly)
-  isActive  Boolean              @default(true)
+  isActive  Boolean   @default(true)
 
   versions RecurringItemVersion[]
 
@@ -173,7 +167,8 @@ model RecurringItemVersion {
   id              String @id @default(cuid())
   recurringItemId String
 
-  amountCents Int
+  amountEur Decimal @db.Decimal(12, 2)
+
   validFrom   DateTime
   validTo     DateTime?
 

@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/db";
-import { ConflictError } from "@/lib/errors";
+import { prisma } from "@/lib/api/db";
+import { ConflictError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
 import type { CreateLedgerBody } from "@/schemas/ledger.schemas";
 

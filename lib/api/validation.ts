@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { toErrorResponse } from "@/lib/http";
-import { BadRequestError } from "@/lib/errors";
+import { toErrorResponse } from "@/lib/api/http";
+import { BadRequestError } from "@/lib/api/errors";
 
 export async function parseJsonBody<TSchema extends z.ZodTypeAny>(
   req: Request,

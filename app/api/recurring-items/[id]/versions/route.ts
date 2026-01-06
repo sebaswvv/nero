@@ -1,9 +1,9 @@
 export const runtime = "nodejs";
 
 import { NextRequest } from "next/server";
-import { jsonResponse } from "@/lib/http";
-import { routeHandler, parseJsonBody, parseParams } from "@/lib/validation";
-import { requireUserId } from "@/lib/auth";
+import { jsonResponse } from "@/lib/api/http";
+import { routeHandler, parseJsonBody, parseParams } from "@/lib/api/validation";
+import { requireUserId } from "@/lib/api/auth";
 import { createRecurringItemVersion } from "@/services/recurring.service";
 import { CreateRecurringVersionBodySchema } from "@/schemas/recurring.schemas";
 import { z } from "zod";

@@ -1,7 +1,7 @@
-import { prisma } from "@/lib/db";
-import { ConflictError } from "@/lib/errors";
+import { prisma } from "@/lib/api/db";
+import { ConflictError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
-import { requireLedgerAccess } from "@/lib/ledger-access";
+import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import type { CreateTransactionBody } from "@/schemas/transaction.schemas";
 
 type DateRange = { from: Date; to: Date };
@@ -9,17 +9,18 @@ type DateRange = { from: Date; to: Date };
 export async function createTransaction(userId: string, body: CreateTransactionBody) {
   await requireLedgerAccess(userId, body.ledgerId);
 
+  const occurredAt: Date = body.occurredAt ?? new Date();
+
   try {
     return await prisma.transaction.create({
       data: {
         ledgerId: body.ledgerId,
         userId,
-        occurredAt: body.occurredAt ?? new Date(),
+        occurredAt,
         direction: body.direction,
-        amountCents: body.amountCents,
+        amountEur: body.amountEur,
         category: body.category,
         description: body.description ?? null,
-        merchant: body.merchant ?? null,
       },
     });
   } catch (e) {
@@ -33,7 +34,7 @@ export async function createTransaction(userId: string, body: CreateTransactionB
 export async function listTransactions(userId: string, ledgerId: string, range: DateRange) {
   await requireLedgerAccess(userId, ledgerId);
 
-  return prisma.transaction.findMany({
+  return await prisma.transaction.findMany({
     where: {
       ledgerId,
       occurredAt: {

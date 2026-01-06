@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/db";
-import { ForbiddenError } from "@/lib/errors";
+import { prisma } from "@/lib/api/db";
+import { ForbiddenError } from "@/lib/api/errors";
 
 export async function requireLedgerAccess(userId: string, ledgerId: string) {
   const member = await prisma.ledgerMember.findUnique({

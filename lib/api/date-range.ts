@@ -1,4 +1,4 @@
-import { BadRequestError } from "@/lib/errors";
+import { BadRequestError } from "@/lib/api/errors";
 
 type DateRange = { from: Date; to: Date };
 

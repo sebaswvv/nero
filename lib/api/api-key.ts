@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/api/db";
 
 // get API key from request headers
 export function getApiKey(req: Request): string | null {
