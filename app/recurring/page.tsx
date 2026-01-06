@@ -90,7 +90,6 @@ export default function RecurringPage() {
     if (!selectedLedger) return;
     fetchItems(selectedLedger);
 
-    // reset create form
     setName("");
     setAmountEur("");
     setDirection("expense");
@@ -156,6 +155,7 @@ export default function RecurringPage() {
       await fetchItems(selectedLedger);
       setName("");
       setAmountEur("");
+      setDirection("expense");
       setValidFrom(startOfCurrentMonth());
       setValidTo("");
     } catch (e) {
@@ -259,23 +259,22 @@ export default function RecurringPage() {
                   {editingItemId === item.id && (
                     <div className="grid grid-cols-4 gap-2 pt-2">
                       <input
-                        type="text"
                         placeholder="Amount"
                         value={versionAmount}
                         onChange={e => setVersionAmount(e.target.value)}
-                        className="px-2 py-1 rounded bg-transparent border border-gray-600"
+                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
                       />
                       <input
                         type="date"
                         value={versionValidFrom}
                         onChange={e => setVersionValidFrom(e.target.value)}
-                        className="px-2 py-1 rounded bg-transparent border border-gray-600"
+                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
                       />
                       <input
                         type="date"
                         value={versionValidTo}
                         onChange={e => setVersionValidTo(e.target.value)}
-                        className="px-2 py-1 rounded bg-transparent border border-gray-600"
+                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
                       />
                       <button
                         onClick={() => handleAddVersion(item.id)}
@@ -303,11 +302,20 @@ export default function RecurringPage() {
           />
 
           <input
-            placeholder="Amount"
+            placeholder="Amount (€)"
             value={amountEur}
             onChange={e => setAmountEur(e.target.value)}
             className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
           />
+
+          <select
+            value={direction}
+            onChange={e => setDirection(e.target.value as "expense" | "income")}
+            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
+          >
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
 
           <input
             type="date"
