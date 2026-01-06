@@ -125,16 +125,35 @@ export async function getIncomeSummary(
   });
 
   let totalIncomeEur = new Prisma.Decimal(0);
-  
+
   // sum up the amounts of the latest active versions
-  for (const item of income) {  
+  for (const item of income) {
     const latestActiveVersion = item.versions[0];
     if (!latestActiveVersion) continue;
-    
+
     totalIncomeEur = totalIncomeEur.plus(latestActiveVersion.amountEur);
   }
-  
-  return {  
+
+  return {
     totalIncomeEur: totalIncomeEur.toFixed(2),
+  };
+}
+
+// make a function to get the sum of expenses - income within a date range
+export async function getNetBalanceSummary(
+  userId: string,
+  ledgerId: string,
+  range: DateRange
+): Promise<{ netBalanceEur: string }> {
+  const expensesSummary = await getExpensesSummary(userId, ledgerId, range);
+  const incomeSummary = await getIncomeSummary(userId, ledgerId, range);
+
+  const totalExpensesEur = new Prisma.Decimal(expensesSummary.totalExpensesEur);
+  const totalIncomeEur = new Prisma.Decimal(incomeSummary.totalIncomeEur);
+
+  const netBalanceEur = totalIncomeEur.minus(totalExpensesEur);
+
+  return {
+    netBalanceEur: netBalanceEur.toFixed(2),
   };
 }

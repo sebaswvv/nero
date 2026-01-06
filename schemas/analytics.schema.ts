@@ -14,3 +14,10 @@ export const IncomeSummaryQuerySchema = z.object({
   to: OccurredAtSchema,
 });
 export type IncomeSummaryQuery = z.infer<typeof IncomeSummaryQuerySchema>;
+
+export const NetBalanceSummaryQuerySchema = z.object({
+  ledgerId: IdSchema,
+  from: OccurredAtSchema,
+  to: OccurredAtSchema,
+});
+export type NetBalanceSummaryQuery = z.infer<typeof NetBalanceSummaryQuerySchema>;

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ExpensesSummaryCard from "./analytics/ExpensesSummary";
 import IncomeSummaryCard from "./analytics/IncomeSummary";
+import NetBalanceSummaryCard from "@/app/components/analytics/NetBalanceSummary";
 import { startOfCurrentMonth, endOfCurrentMonth } from "./analytics/dateUtils";
 
 type Ledger = {
@@ -87,6 +88,7 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <IncomeSummaryCard ledgerId={selectedLedger} from={fromDate} to={toDate} />
         <ExpensesSummaryCard ledgerId={selectedLedger} from={fromDate} to={toDate} />
+        <NetBalanceSummaryCard ledgerId={selectedLedger} from={fromDate} to={toDate} />
       </div>
     </div>
   );
