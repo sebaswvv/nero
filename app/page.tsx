@@ -1,61 +1,37 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/api/auth-options";
+import AnalyticsSummary from "./components/AnalyticsSummary";
 
+/**
+ * The home page retains the login/logout functionality and introduces an
+ * embedded analytics view.  Once the user is authenticated the analytics
+ * summary is displayed along with navigation links to the Ledgers,
+ * Recurring items and Transactions pages.  The separate analytics link has
+ * been removed in favour of showing analytics directly on the homepage.
+ */
 export default async function Home() {
   const session = await getServerSession(authOptions);
   const user = session?.user ?? null;
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          display: "grid",
-          gap: 16,
-          padding: 24,
-          borderRadius: 16,
-          border: "1px solid rgba(255,255,255,0.12)",
-        }}
-      >
-        <header
-          style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}
-        >
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-xl grid gap-6 p-6 rounded-lg border border-gray-700">
+        {/* Header */}
+        <header className="flex justify-between items-center gap-4">
           <div>
-            <h1 style={{ margin: 0 }}>Nero</h1>
-            <p style={{ margin: 0, opacity: 0.7 }}>Personal finance</p>
+            <h1 className="text-2xl font-bold mb-0">Nero</h1>
+            <p className="text-sm opacity-70 mb-0">Personal finance</p>
           </div>
-          <div
-            style={{
-              textAlign: "right",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-              alignItems: "flex-end",
-            }}
-          >
+          <div className="text-right flex flex-col gap-2 items-end">
             {user ? (
               <>
-                <div style={{ fontSize: 13, opacity: 0.85 }}>{user.name ?? user.email}</div>
+                <div className="text-sm opacity-85">
+                  {user.name ?? user.email}
+                </div>
                 <Link
                   href="/api/auth/signout"
-                  style={{
-                    padding: "8px 10px",
-                    borderRadius: 8,
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    textDecoration: "none",
-                    color: "inherit",
-                    opacity: 0.9,
-                  }}
+                  className="px-3 py-2 rounded border border-gray-600 text-sm opacity-90"
                 >
                   Sign out
                 </Link>
@@ -63,13 +39,7 @@ export default async function Home() {
             ) : (
               <Link
                 href="/api/auth/signin"
-                style={{
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
+                className="px-3 py-2 rounded border border-gray-600 text-sm"
               >
                 Sign in
               </Link>
@@ -77,70 +47,33 @@ export default async function Home() {
           </div>
         </header>
 
+        {/* Show analytics and navigation when signed in */}
         {user && (
-          <nav
-            style={{
-              display: "grid",
-              gap: 10,
-              marginTop: 8,
-            }}
-          >
-            <Link
-              href="/ledgers"
-              style={{
-                padding: "12px",
-                textAlign: "center",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              Ledgers
-            </Link>
-
-            <Link
-              href="/recurring"
-              style={{
-                padding: "12px",
-                textAlign: "center",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              Recurring items
-            </Link>
-
-            <Link
-              href="/transactions"
-              style={{
-                padding: "12px",
-                textAlign: "center",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              Transactions
-            </Link>
-
-            <Link
-              href="/analytics"
-              style={{
-                padding: "12px",
-                textAlign: "center",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.15)",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              Analytics
-            </Link>
-          </nav>
+          <>
+            {/* Analytics summary component */}
+            <AnalyticsSummary />
+            {/* Navigation links */}
+            <nav className="grid gap-3 mt-4">
+              <Link
+                href="/ledgers"
+                className="px-4 py-3 text-center rounded-lg border border-gray-600"
+              >
+                Ledgers
+              </Link>
+              <Link
+                href="/recurring"
+                className="px-4 py-3 text-center rounded-lg border border-gray-600"
+              >
+                Recurring items
+              </Link>
+              <Link
+                href="/transactions"
+                className="px-4 py-3 text-center rounded-lg border border-gray-600"
+              >
+                Transactions
+              </Link>
+            </nav>
+          </>
         )}
       </div>
     </main>
