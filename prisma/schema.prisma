@@ -39,6 +39,7 @@ model User {
   emailVerified DateTime?
   image         String?
   apiKey        String?   @unique
+  apiKeyHash    String?   @unique
 
   accounts Account[]
   sessions Session[]
