@@ -4,11 +4,11 @@ import { jsonResponse } from "@/lib/api/http";
 import { getApiKey, getUserIdFromApiKey } from "@/lib/api/api-key";
 import { routeHandler, parseJsonBody, parseQuery } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { createTransaction, listTransactions } from "@/services/transaction.service";
+import { createTransaction, listTransactions } from "@/domain/transactions/transaction.service";
 import {
   CreateTransactionBodySchema,
   ListTransactionsQuerySchema,
-} from "@/schemas/transaction.schemas";
+} from "@/domain/transactions/transaction.schemas";
 import { resolveDateRange } from "@/lib/api/date-range";
 
 export async function POST(req: Request) {

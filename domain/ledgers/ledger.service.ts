@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/api/db";
 import { ConflictError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
-import type { CreateLedgerBody } from "@/schemas/ledger.schemas";
+import type { CreateLedgerBody } from "@/domain/ledgers/ledger.schemas";
 
 export async function createLedger(userId: string, data: CreateLedgerBody) {
   try {

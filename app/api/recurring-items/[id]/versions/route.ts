@@ -4,8 +4,8 @@ import { NextRequest } from "next/server";
 import { jsonResponse } from "@/lib/api/http";
 import { routeHandler, parseJsonBody, parseParams } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { createRecurringItemVersion } from "@/services/recurring.service";
-import { CreateRecurringVersionBodySchema } from "@/schemas/recurring.schemas";
+import { createRecurringItemVersion } from "@/domain/recurring/recurring.service";
+import { CreateRecurringVersionBodySchema } from "@/domain/recurring/recurring.schemas";
 import { z } from "zod";
 import { IdSchema } from "@/schemas/common.schemas";
 

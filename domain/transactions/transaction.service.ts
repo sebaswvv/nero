@@ -2,7 +2,7 @@ import { prisma } from "@/lib/api/db";
 import { ConflictError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
-import type { CreateTransactionBody } from "@/schemas/transaction.schemas";
+import type { CreateTransactionBody } from "@/domain/transactions/transaction.schemas";
 
 type DateRange = { from: Date; to: Date };
 

@@ -3,9 +3,9 @@ export const runtime = "nodejs";
 import { jsonResponse } from "@/lib/api/http";
 import { routeHandler, parseJsonBody } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { ExpensesSummaryQuerySchema } from "@/schemas/analytics.schema";
+import { ExpensesSummaryQuerySchema } from "@/domain/analytics/analytics.schema";
 import { parseQuery } from "@/lib/api/validation";
-import { getExpensesSummary } from "@/services/analytics.service";
+import { getExpensesSummary } from "@/domain/analytics/analytics.service";
 import { resolveDateRange } from "@/lib/api/date-range";
 
 // GET /api/analytics/expenses-summary

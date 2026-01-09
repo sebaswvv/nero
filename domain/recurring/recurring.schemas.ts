@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DirectionSchema, OccurredAtSchema, IdSchema, MoneyEurSchema } from "./common.schemas";
+import { DirectionSchema, OccurredAtSchema, IdSchema, MoneyEurSchema } from "../../schemas/common.schemas";
 
 export const CreateRecurringItemBodySchema = z
   .object({

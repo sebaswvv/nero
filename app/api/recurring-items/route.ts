@@ -3,9 +3,9 @@ export const runtime = "nodejs";
 import { jsonResponse } from "@/lib/api/http";
 import { routeHandler, parseJsonBody, parseQuery } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { createRecurringItem, listRecurringItems } from "@/services/recurring.service";
-import { CreateRecurringItemBodySchema } from "@/schemas/recurring.schemas";
-import { ListTransactionsQuerySchema } from "@/schemas/transaction.schemas";
+import { createRecurringItem, listRecurringItems } from "@/domain/recurring/recurring.service";
+import { CreateRecurringItemBodySchema } from "@/domain/recurring/recurring.schemas";
+import { ListTransactionsQuerySchema } from "@/domain/transactions/transaction.schemas";
 
 export async function POST(req: Request) {
   return routeHandler(async () => {

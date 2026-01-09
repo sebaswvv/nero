@@ -3,8 +3,8 @@ export const runtime = "nodejs";
 import { jsonResponse } from "@/lib/api/http";
 import { routeHandler, parseJsonBody } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { IncomeSummaryQuerySchema } from "@/schemas/analytics.schema";
-import { getIncomeSummary } from "@/services/analytics.service";
+import { IncomeSummaryQuerySchema } from "@/domain/analytics/analytics.schema";
+import { getIncomeSummary } from "@/domain/analytics/analytics.service";
 import { parseQuery } from "@/lib/api/validation";
 import { resolveDateRange } from "@/lib/api/date-range";
 

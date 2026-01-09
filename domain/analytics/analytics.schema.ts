@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { OccurredAtSchema, IdSchema } from "./common.schemas";
+import { OccurredAtSchema, IdSchema } from "../../schemas/common.schemas";
 
 export const ExpensesSummaryQuerySchema = z.object({
   ledgerId: IdSchema,

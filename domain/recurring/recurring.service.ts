@@ -5,7 +5,7 @@ import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import type {
   CreateRecurringItemBody,
   CreateRecurringVersionBody,
-} from "@/schemas/recurring.schemas";
+} from "@/domain/recurring/recurring.schemas";
 
 export async function createRecurringItem(userId: string, body: CreateRecurringItemBody) {
   await requireLedgerAccess(userId, body.ledgerId);
