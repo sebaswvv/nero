@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nero - for personal finance
 
-## Getting Started
+## Project structure
 
-First, run the development server:
+This project is a Next.js project with a Prisma postgress database.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Note: The frontend code is 'vibe-coded' using chatGPT 5.2. So no blame on ugly code pls...
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The ORM used is Prisma with some zod-schema validation for the API.
+The API-routes talk with the respective service layers that handle business logic. The zod schemas can be found in the /schemas folder.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+As a user you can login with a Google account. From there you need to create a Ledger to track all expenses and incomes. There are two types of financial transactions:
 
-## Learn More
+- Recurring: These are recurring expenses/incomes (Salary or Rent).
+- Transactions: These are the variable expenses (Doing groceries or going to a festival).
 
-To learn more about Next.js, take a look at the following resources:
+## Run the project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Get a postgress (Prisma) database and set the URL in the .env (see .env.example)
+2. Create a google client in Google Cloud Console and get the ID and secret of the project (this is for auth).
+3. Set all env vars
+4. 'npm i'
+5. 'npm run dev'
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+For migrations:
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. npx prisma migrate dev --name [name]

@@ -1,5 +1,5 @@
 // app/components/analytics/NetBalanceSummary.tsx
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -74,9 +74,7 @@ export default function NetBalanceSummaryCard({ ledgerId, from, to }: Props) {
         </div>
       )}
 
-      <div className="text-xs opacity-60 mt-1">
-        Income − expenses within the selected period
-      </div>
+      <div className="text-xs opacity-60 mt-1">Income − expenses within the selected period</div>
     </div>
   );
 }

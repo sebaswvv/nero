@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { isApiError } from "@/lib/api/errors";
 
-// create error response
 export function toErrorResponse(err: unknown) {
   if (isApiError(err)) {
     return NextResponse.json({ error: err.code, message: err.message }, { status: err.status });
@@ -13,7 +12,6 @@ export function toErrorResponse(err: unknown) {
   );
 }
 
-// create JSON response
 export function jsonResponse(payload: unknown, status = 200) {
   return NextResponse.json(payload, { status });
 }
