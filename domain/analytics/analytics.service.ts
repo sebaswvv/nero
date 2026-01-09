@@ -1,16 +1,7 @@
 import { prisma } from "@/lib/api/db";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import { Prisma } from "@prisma/client";
-
-type DateRange = { from: Date; to: Date };
-
-type ExpensesSummary = {
-  totalExpensesEur: string;
-  totalExpensesTransactionsEur: string;
-  totalExpenseTransactions: number;
-  perCategoryEur: Record<string, string>;
-  totalRecurringExpensesEur: string;
-};
+import { DateRange, ExpensesSummary } from "./analytics.types";
 
 export async function getExpensesSummary(
   userId: string,
