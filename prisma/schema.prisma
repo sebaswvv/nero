@@ -38,7 +38,6 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
-  apiKey        String?   @unique
   apiKeyHash    String?   @unique
 
   accounts Account[]

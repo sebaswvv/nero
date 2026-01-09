@@ -3,12 +3,10 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/api/db";
 import { generateApiKey, hashApiKey } from "@/lib/api/api-key";
-import { hash } from "crypto";
 
 const allowedEmails =
   process.env.ALLOWED_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ?? [];
 
-// NextAuth handler
 const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -21,24 +19,7 @@ const handler = NextAuth({
   // sign in only allowed for specific emails
   callbacks: {
     async signIn({ profile }) {
-      // temp solution;
-      // the user now only has apiKey and not the hashed version stored
-      // so generate the hashed version of the api key and store it
-
       const email = (profile as { email?: string } | null)?.email?.toLowerCase();
-      const apiKey = prisma.user.findUnique({
-        where: { email },
-        select: { apiKey: true },
-      });
-
-      const userWithApiKey = await apiKey;
-      if (userWithApiKey && userWithApiKey.apiKey) {
-        await prisma.user.update({
-          where: { email },
-          data: { apiKeyHash: hashApiKey(userWithApiKey.apiKey) },
-        });
-      }
-
       if (!email) return false;
       return allowedEmails.includes(email);
     },
