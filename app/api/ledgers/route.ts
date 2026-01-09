@@ -3,8 +3,8 @@ export const runtime = "nodejs";
 import { jsonResponse } from "@/lib/api/http";
 import { routeHandler, parseJsonBody } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { CreateLedgerBodySchema } from "@/domain/ledgers/ledger.schemas";
-import { createLedger, listLedgers } from "@/domain/ledgers/ledger.service";
+import { CreateLedgerBodySchema } from "@/domain/ledgers/ledgers.schemas";
+import { createLedger, listLedgers } from "@/domain/ledgers/ledgers.service";
 
 export async function POST(req: Request) {
   return routeHandler(async () => {

@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { DirectionSchema, OccurredAtSchema, IdSchema, MoneyEurSchema } from "../../schemas/common.schemas";
+import {
+  DirectionSchema,
+  OccurredAtSchema,
+  IdSchema,
+  MoneyEurSchema,
+} from "../../schemas/common.schemas";
 
 export const TransactionCategorySchema = z.enum([
   "groceries",

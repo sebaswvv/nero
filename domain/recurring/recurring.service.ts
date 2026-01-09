@@ -1,4 +1,3 @@
-import { prisma } from "@/lib/api/db";
 import { ConflictError, BadRequestError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
@@ -6,6 +5,12 @@ import type {
   CreateRecurringItemBody,
   CreateRecurringVersionBody,
 } from "@/domain/recurring/recurring.schemas";
+import {
+  createRecurringItemRecord,
+  createRecurringItemVersionRecord,
+  findRecurringItemForAccessCheck,
+  listRecurringItemRecords,
+} from "./recurring.repository";
 
 export async function createRecurringItem(userId: string, body: CreateRecurringItemBody) {
   await requireLedgerAccess(userId, body.ledgerId);
@@ -13,30 +18,12 @@ export async function createRecurringItem(userId: string, body: CreateRecurringI
   const validFrom: Date = body.validFrom ?? new Date();
   const validTo: Date | null = body.validTo ?? null;
 
-  // Defensive check (ideally already enforced in Zod refine)
   if (validTo && validFrom > validTo) {
     throw new BadRequestError("INVALID_RANGE", "validFrom must be before validTo");
   }
 
   try {
-    return await prisma.recurringItem.create({
-      data: {
-        ledgerId: body.ledgerId,
-        createdById: userId,
-        name: body.name,
-        direction: body.direction,
-        isActive: body.isActive,
-        versions: {
-          create: {
-            amountEur: body.amountEur,
-            validFrom,
-            validTo,
-            createdById: userId,
-          },
-        },
-      },
-      include: { versions: { orderBy: { validFrom: "desc" } } },
-    });
+    return await createRecurringItemRecord(userId, body, validFrom, validTo);
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
       throw new ConflictError(
@@ -53,41 +40,22 @@ export async function createRecurringItemVersion(
   recurringItemId: string,
   body: CreateRecurringVersionBody
 ) {
-  const item = await prisma.recurringItem.findUnique({
-    where: { id: recurringItemId },
-    select: { id: true, ledgerId: true },
-  });
+  const item = await findRecurringItemForAccessCheck(recurringItemId);
 
   if (!item) {
     throw new BadRequestError("INVALID_RECURRING_ITEM", "Recurring item not found");
   }
 
+  // check access
   await requireLedgerAccess(userId, item.ledgerId);
 
   const validFrom: Date = body.validFrom ?? new Date();
   const validTo: Date | null = body.validTo ?? null;
 
-  return await prisma.recurringItemVersion.create({
-    data: {
-      recurringItemId,
-      amountEur: body.amountEur,
-      validFrom,
-      validTo,
-      createdById: userId,
-    },
-  });
+  return createRecurringItemVersionRecord(userId, recurringItemId, body, validFrom, validTo);
 }
 
 export async function listRecurringItems(userId: string, ledgerId: string) {
   await requireLedgerAccess(userId, ledgerId);
-
-  return await prisma.recurringItem.findMany({
-    where: { ledgerId },
-    include: {
-      versions: {
-        orderBy: { validFrom: "desc" },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
+  return listRecurringItemRecords(ledgerId);
 }

@@ -1,10 +1,9 @@
-import { prisma } from "@/lib/api/db";
 import { ConflictError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import type { CreateTransactionBody } from "@/domain/transactions/transaction.schemas";
-
-type DateRange = { from: Date; to: Date };
+import type { DateRange } from "./transactions.repository";
+import { createTransactionRecord, listTransactionRecords } from "./transactions.repository";
 
 export async function createTransaction(userId: string, body: CreateTransactionBody) {
   await requireLedgerAccess(userId, body.ledgerId);
@@ -12,17 +11,7 @@ export async function createTransaction(userId: string, body: CreateTransactionB
   const occurredAt: Date = body.occurredAt ?? new Date();
 
   try {
-    return await prisma.transaction.create({
-      data: {
-        ledgerId: body.ledgerId,
-        userId,
-        occurredAt,
-        direction: body.direction,
-        amountEur: body.amountEur,
-        category: body.category,
-        description: body.description ?? null,
-      },
-    });
+    return await createTransactionRecord(userId, body, occurredAt);
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
       throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
@@ -33,15 +22,5 @@ export async function createTransaction(userId: string, body: CreateTransactionB
 
 export async function listTransactions(userId: string, ledgerId: string, range: DateRange) {
   await requireLedgerAccess(userId, ledgerId);
-
-  return await prisma.transaction.findMany({
-    where: {
-      ledgerId,
-      occurredAt: {
-        gte: range.from,
-        lte: range.to,
-      },
-    },
-    orderBy: { occurredAt: "desc" },
-  });
+  return listTransactionRecords(ledgerId, range);
 }
