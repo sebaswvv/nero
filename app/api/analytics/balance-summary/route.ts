@@ -12,8 +12,10 @@ import { NetBalanceSummaryQuerySchema } from "@/domain/analytics/analytics.schem
 export async function GET(req: Request) {
   return routeHandler(async () => {
     const userId = await requireUserId();
+
     const query = parseQuery(req, NetBalanceSummaryQuerySchema);
     const range = resolveDateRange({ from: query.from, to: query.to });
+    
     const balanceSummary = await getNetBalanceSummary(userId, query.ledgerId, range);
     return jsonResponse(balanceSummary);
   });

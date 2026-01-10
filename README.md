@@ -4,8 +4,6 @@
 
 This project is a Next.js project with a Prisma postgress database.
 
-Note: The frontend code is 'vibe-coded' using chatGPT 5.2. So no blame on ugly code pls...
-
 The ORM used is Prisma with some zod-schema validation for the API.
 The API-routes talk with the respective service layers that handle business logic. The zod schemas can be found in the /schemas folder.
 
