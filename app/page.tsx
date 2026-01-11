@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/api/auth-options";
 import AnalyticsOverview from "./components/AnalyticsOverview";
+import ApiKey from "./components/ApiKey";
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
@@ -32,6 +33,9 @@ export default async function HomePage() {
           {session && (
             <div className="text-sm opacity-70 mt-3">
               Signed in as <span className="font-mono">{session.user?.email}</span>
+              <div className="mt-2">
+                <ApiKey />
+              </div>
             </div>
           )}
         </div>
