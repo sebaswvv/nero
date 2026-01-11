@@ -24,6 +24,20 @@ export function getApiKey(req: Request): string | null {
   return key && key.trim().length > 0 ? key.trim() : null;
 }
 
+export async function createNewApiKeyForUser(
+  userId: string
+): Promise<{ apiKey: string; apiKeyHash: string }> {
+  const apiKey = generateApiKey();
+  const apiKeyHash = hashApiKey(apiKey);
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { apiKeyHash },
+  });
+
+  return { apiKey, apiKeyHash };
+}
+
 // get the user id associated with the API key
 export async function getUserIdFromApiKey(apiKey: string): Promise<string | null> {
   const hash = hashApiKey(apiKey);

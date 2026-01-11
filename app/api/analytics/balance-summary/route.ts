@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
     const query = parseQuery(req, NetBalanceSummaryQuerySchema);
     const range = resolveDateRange({ from: query.from, to: query.to });
-    
+
     const balanceSummary = await getNetBalanceSummary(userId, query.ledgerId, range);
     return jsonResponse(balanceSummary);
   });

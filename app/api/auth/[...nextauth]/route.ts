@@ -2,7 +2,8 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/api/db";
-import { generateApiKey, hashApiKey } from "@/lib/api/api-key";
+import { createNewApiKeyForUser } from "@/lib/api/api-key";
+import { BadRequestError } from "@/lib/api/errors";
 
 const allowedEmails =
   process.env.ALLOWED_EMAILS?.split(",").map((e) => e.trim().toLowerCase()) ?? [];
@@ -34,10 +35,11 @@ const handler = NextAuth({
   events: {
     // add API key to new user
     async createUser({ user }) {
-      const rawApiKey = generateApiKey();
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { apiKeyHash: hashApiKey(rawApiKey) },
+      createNewApiKeyForUser(user.id).catch(() => {
+        throw new BadRequestError(
+          "API_KEY_CREATION_FAILED",
+          "Failed to create API key for new user"
+        );
       });
     },
   },
