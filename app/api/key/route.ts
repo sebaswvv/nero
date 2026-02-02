@@ -10,6 +10,6 @@ export async function GET() {
     const userId = await requireUserId();
     const apiKey = await createNewApiKeyForUser(userId);
 
-    return jsonResponse({ apiKey: apiKey.apiKey});
+    return jsonResponse({ apiKey: apiKey.apiKey });
   });
 }

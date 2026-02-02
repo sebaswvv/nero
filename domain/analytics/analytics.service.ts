@@ -32,9 +32,8 @@ export async function getCombinedAnalyticsSummary(
   // calculate totals
   const totalRecurringExpensesEur = sumAmounts(recurringExpenseAmounts);
   const totalRecurringIncomeEur = sumAmounts(recurringIncomeAmounts);
-  const totalExpensesEur = variableExpenses.totalExpensesTransactionsEur.plus(
-    totalRecurringExpensesEur
-  );
+  const totalExpensesEur =
+    variableExpenses.totalExpensesTransactionsEur.plus(totalRecurringExpensesEur);
 
   const expenses: ExpensesSummary = {
     totalExpensesEur: totalExpensesEur.toFixed(2),
