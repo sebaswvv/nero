@@ -26,7 +26,9 @@ export default function ExpensesSummaryCard({ summary }: Props) {
           <div className="p-3 border border-gray-600 rounded">
             <div className="text-xs opacity-70">Variable expenses</div>
             <div className="text-lg font-bold">€ {summary.totalExpensesTransactionsEur}</div>
-            <div className="text-xs opacity-60">{summary.totalExpenseTransactions} transactions</div>
+            <div className="text-xs opacity-60">
+              {summary.totalExpenseTransactions} transactions
+            </div>
           </div>
           <div className="p-3 border border-gray-600 rounded">
             <div className="text-xs opacity-70">Recurring expenses</div>
