@@ -66,3 +66,9 @@ export async function listRecurringItemRecords(ledgerId: string) {
     orderBy: { name: "asc" },
   });
 }
+
+export async function deleteRecurringItemRecord(recurringItemId: string) {
+  return prisma.recurringItem.delete({
+    where: { id: recurringItemId },
+  });
+}

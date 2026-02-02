@@ -155,6 +155,34 @@ export default function RecurringPage() {
   }
 
   /* =======================
+     Delete recurring item
+  ======================= */
+
+  async function handleDelete(itemId: string) {
+    if (!confirm("Are you sure you want to delete this recurring item?")) {
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/recurring-items/${itemId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.message ?? "Failed to delete recurring item");
+      }
+
+      await fetchItems(selectedLedger);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  /* =======================
      Add version
   ======================= */
 
@@ -301,12 +329,20 @@ export default function RecurringPage() {
                         {v?.amountEur} € · {item.direction}
                       </div>
                     </div>
-                    <button
-                      onClick={() => setEditingItemId(item.id)}
-                      className="text-sm text-blue-400"
-                    >
-                      Add version
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setEditingItemId(item.id)}
+                        className="text-sm text-blue-400"
+                      >
+                        Add version
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="text-sm text-red-500 hover:text-red-400"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
 
                   {editingItemId === item.id && (

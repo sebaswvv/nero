@@ -10,6 +10,7 @@ import {
   createRecurringItemVersionRecord,
   findRecurringItemForAccessCheck,
   listRecurringItemRecords,
+  deleteRecurringItemRecord,
 } from "./recurring.repository";
 
 export async function createRecurringItem(userId: string, body: CreateRecurringItemBody) {
@@ -58,4 +59,16 @@ export async function createRecurringItemVersion(
 export async function listRecurringItems(userId: string, ledgerId: string) {
   await requireLedgerAccess(userId, ledgerId);
   return listRecurringItemRecords(ledgerId);
+}
+
+export async function deleteRecurringItem(userId: string, recurringItemId: string) {
+  const item = await findRecurringItemForAccessCheck(recurringItemId);
+
+  if (!item) {
+    throw new BadRequestError("INVALID_RECURRING_ITEM", "Recurring item not found");
+  }
+
+  await requireLedgerAccess(userId, item.ledgerId);
+
+  return deleteRecurringItemRecord(recurringItemId);
 }

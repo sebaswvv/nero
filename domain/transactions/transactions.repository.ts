@@ -33,3 +33,16 @@ export async function listTransactionRecords(ledgerId: string, range: DateRange)
     orderBy: { occurredAt: "desc" },
   });
 }
+
+export async function findTransactionForAccessCheck(transactionId: string) {
+  return prisma.transaction.findUnique({
+    where: { id: transactionId },
+    select: { id: true, ledgerId: true },
+  });
+}
+
+export async function deleteTransactionRecord(transactionId: string) {
+  return prisma.transaction.delete({
+    where: { id: transactionId },
+  });
+}

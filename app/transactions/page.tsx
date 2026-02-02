@@ -130,6 +130,34 @@ export default function TransactionsPage() {
   }, [selectedLedger, fromDate, toDate]);
 
   /* =======================
+     Delete transaction
+  ======================= */
+
+  async function handleDelete(transactionId: string) {
+    if (!confirm("Are you sure you want to delete this transaction?")) {
+      return;
+    }
+
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/transactions/${transactionId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.message ?? "Failed to delete transaction");
+      }
+
+      await fetchTransactions(selectedLedger, fromDate, toDate);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  /* =======================
      Create transaction
   ======================= */
 
@@ -288,6 +316,7 @@ export default function TransactionsPage() {
                 <th className="p-2 text-left">Description</th>
                 <th className="p-2 text-center">Dir</th>
                 <th className="p-2 text-right">Amount</th>
+                <th className="p-2 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -299,6 +328,14 @@ export default function TransactionsPage() {
                   <td className="p-2 text-center">{tx.direction}</td>
                   <td className="p-2 text-right">
                     {tx.direction === "expense" ? "-" : "+"}€ {tx.amountEur}
+                  </td>
+                  <td className="p-2 text-center">
+                    <button
+                      onClick={() => handleDelete(tx.id)}
+                      className="text-red-500 hover:text-red-400 text-sm"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
