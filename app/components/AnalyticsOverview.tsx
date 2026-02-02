@@ -11,12 +11,30 @@ type Ledger = {
   name: string;
 };
 
+type CombinedAnalyticsSummary = {
+  expenses: {
+    totalExpensesEur: string;
+    totalExpensesTransactionsEur: string;
+    totalExpenseTransactions: number;
+    perCategoryEur: Record<string, string>;
+    totalRecurringExpensesEur: string;
+  };
+  income: {
+    totalIncomeEur: string;
+  };
+  balance: {
+    netBalanceEur: string;
+  };
+};
+
 export default function AnalyticsOverview() {
   const [ledgers, setLedgers] = useState<Ledger[]>([]);
   const [selectedLedger, setSelectedLedger] = useState<string>("");
   const [fromDate, setFromDate] = useState<string>(startOfCurrentMonth());
   const [toDate, setToDate] = useState<string>(endOfCurrentMonth());
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [summary, setSummary] = useState<CombinedAnalyticsSummary | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -36,6 +54,50 @@ export default function AnalyticsOverview() {
     }
     init();
   }, []);
+
+  useEffect(() => {
+    async function fetchAnalytics() {
+      if (!selectedLedger || !fromDate || !toDate) {
+        setSummary(null);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams({
+          ledgerId: selectedLedger,
+          from: fromDate,
+          to: toDate,
+        });
+        const res = await fetch(`/api/analytics/summary?${params.toString()}`, {
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          let message = "Failed to load analytics";
+          try {
+            const errData = await res.json();
+            message = errData?.message ?? message;
+          } catch {
+            // ignore
+          }
+          throw new Error(message);
+        }
+
+        const data: CombinedAnalyticsSummary = await res.json();
+        setSummary(data);
+      } catch (e) {
+        setError((e as Error).message);
+        setSummary(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAnalytics();
+  }, [selectedLedger, fromDate, toDate]);
 
   return (
     <div className="space-y-4">
@@ -85,11 +147,17 @@ export default function AnalyticsOverview() {
 
       {error && <div className="text-sm text-red-500">{error}</div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <IncomeSummaryCard ledgerId={selectedLedger} from={fromDate} to={toDate} />
-        <ExpensesSummaryCard ledgerId={selectedLedger} from={fromDate} to={toDate} />
-        <NetBalanceSummaryCard ledgerId={selectedLedger} from={fromDate} to={toDate} />
-      </div>
+      {loading ? (
+        <div className="text-sm opacity-70">Loading analytics...</div>
+      ) : !summary ? (
+        <div className="text-sm opacity-70">Select a ledger and date range.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <IncomeSummaryCard summary={summary.income} />
+          <ExpensesSummaryCard summary={summary.expenses} />
+          <NetBalanceSummaryCard summary={summary.balance} />
+        </div>
+      )}
     </div>
   );
 }

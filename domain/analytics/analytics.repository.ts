@@ -38,60 +38,40 @@ export async function getLatestActiveRecurringExpenseAmounts(
   ledgerId: string,
   range: DateRange
 ): Promise<Prisma.Decimal[]> {
-  const recurringItems = await prisma.recurringItem.findMany({
-    where: {
-      ledgerId,
-      direction: "expense",
-      isActive: true,
-    },
-    select: {
-      versions: {
-        where: {
-          AND: [
-            { validFrom: { lte: range.to } },
-            { OR: [{ validTo: null }, { validTo: { gte: range.from } }] },
-          ],
-        },
-        orderBy: { validFrom: "desc" },
-        select: { amountEur: true },
-        take: 1,
-      },
-    },
-  });
+  // use raw SQL with DISTINCT ON to efficiently get the latest version for each recurring item
+  // this avoids the N+1 problem of fetching versions separately for each item
+  const result = await prisma.$queryRaw<Array<{ amountEur: Prisma.Decimal }>>`
+    SELECT DISTINCT ON (ri.id) v."amountEur"
+    FROM "RecurringItem" ri
+    INNER JOIN "RecurringItemVersion" v ON v."recurringItemId" = ri.id
+    WHERE ri."ledgerId" = ${ledgerId}
+      AND ri.direction = 'expense'
+      AND ri."isActive" = true
+      AND v."validFrom" <= ${range.to}
+      AND (v."validTo" IS NULL OR v."validTo" >= ${range.from})
+    ORDER BY ri.id, v."validFrom" DESC
+  `;
 
-  // get the amount from the latest version for each recurring item
-  return recurringItems
-    .map((item) => item.versions[0]?.amountEur)
-    .filter((x): x is Prisma.Decimal => Boolean(x));
+  return result.map((row) => row.amountEur);
 }
 
 export async function getLatestActiveRecurringIncomeAmounts(
   ledgerId: string,
   range: DateRange
 ): Promise<Prisma.Decimal[]> {
-  const incomeItems = await prisma.recurringItem.findMany({
-    where: {
-      ledgerId,
-      direction: "income",
-      isActive: true,
-    },
-    select: {
-      versions: {
-        where: {
-          AND: [
-            { validFrom: { lte: range.to } },
-            { OR: [{ validTo: null }, { validTo: { gte: range.from } }] },
-          ],
-        },
-        orderBy: { validFrom: "desc" },
-        select: { amountEur: true },
-        take: 1,
-      },
-    },
-  });
+  // use raw SQL with DISTINCT ON to efficiently get the latest version for each recurring item
+  // this avoids the N+1 problem of fetching versions separately for each item
+  const result = await prisma.$queryRaw<Array<{ amountEur: Prisma.Decimal }>>`
+    SELECT DISTINCT ON (ri.id) v."amountEur"
+    FROM "RecurringItem" ri
+    INNER JOIN "RecurringItemVersion" v ON v."recurringItemId" = ri.id
+    WHERE ri."ledgerId" = ${ledgerId}
+      AND ri.direction = 'income'
+      AND ri."isActive" = true
+      AND v."validFrom" <= ${range.to}
+      AND (v."validTo" IS NULL OR v."validTo" >= ${range.from})
+    ORDER BY ri.id, v."validFrom" DESC
+  `;
 
-  // get the amountEur from the latest version for each income item
-  return incomeItems
-    .map((item) => item.versions[0]?.amountEur)
-    .filter((x): x is Prisma.Decimal => Boolean(x));
+  return result.map((row) => row.amountEur);
 }
