@@ -10,6 +10,20 @@ export type ExpensesSummary = {
   totalRecurringExpensesEur: string;
 };
 
+export type IncomeSummary = {
+  totalIncomeEur: string;
+};
+
+export type NetBalanceSummary = {
+  netBalanceEur: string;
+};
+
+export type CombinedAnalyticsSummary = {
+  expenses: ExpensesSummary;
+  income: IncomeSummary;
+  balance: NetBalanceSummary;
+};
+
 export type VariableExpensesAggregation = {
   perCategoryEur: Record<string, string>;
   totalExpensesTransactionsEur: Prisma.Decimal;

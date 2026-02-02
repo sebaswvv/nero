@@ -1,6 +1,6 @@
 "use client";
 
-// Component to copy the API key to clipboard, not display it
+// component to copy the API key to clipboard, not display it
 // /api/key returns the API key when requested
 import React, { useState } from "react";
 

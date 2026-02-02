@@ -1,11 +1,59 @@
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import { Prisma } from "@prisma/client";
-import { DateRange, ExpensesSummary, VariableExpensesAggregation } from "./analytics.types";
+import {
+  DateRange,
+  ExpensesSummary,
+  VariableExpensesAggregation,
+  CombinedAnalyticsSummary,
+  IncomeSummary,
+  NetBalanceSummary,
+} from "./analytics.types";
 import {
   getLatestActiveRecurringExpenseAmounts,
   getLatestActiveRecurringIncomeAmounts,
   getTransactionsGroupedByCategory,
 } from "./analytics.repository";
+
+export async function getCombinedAnalyticsSummary(
+  userId: string,
+  ledgerId: string,
+  range: DateRange
+): Promise<CombinedAnalyticsSummary> {
+  // single access check
+  await requireLedgerAccess(userId, ledgerId);
+
+  // fetch all data in parallel to minimize latency
+  const [variableExpenses, recurringExpenseAmounts, recurringIncomeAmounts] = await Promise.all([
+    aggregateVariableExpenses(ledgerId, range),
+    getLatestActiveRecurringExpenseAmounts(ledgerId, range),
+    getLatestActiveRecurringIncomeAmounts(ledgerId, range),
+  ]);
+
+  // calculate totals
+  const totalRecurringExpensesEur = sumAmounts(recurringExpenseAmounts);
+  const totalRecurringIncomeEur = sumAmounts(recurringIncomeAmounts);
+  const totalExpensesEur = variableExpenses.totalExpensesTransactionsEur.plus(
+    totalRecurringExpensesEur
+  );
+
+  const expenses: ExpensesSummary = {
+    totalExpensesEur: totalExpensesEur.toFixed(2),
+    totalExpensesTransactionsEur: variableExpenses.totalExpensesTransactionsEur.toFixed(2),
+    totalExpenseTransactions: variableExpenses.totalExpenseTransactions,
+    perCategoryEur: variableExpenses.perCategoryEur,
+    totalRecurringExpensesEur: totalRecurringExpensesEur.toFixed(2),
+  };
+
+  const income: IncomeSummary = {
+    totalIncomeEur: totalRecurringIncomeEur.toFixed(2),
+  };
+
+  const balance: NetBalanceSummary = {
+    netBalanceEur: totalRecurringIncomeEur.minus(totalExpensesEur).toFixed(2),
+  };
+
+  return { expenses, income, balance };
+}
 
 export async function getExpensesSummary(
   userId: string,
@@ -99,4 +147,12 @@ async function sumRecurringIncome(ledgerId: string, range: DateRange): Promise<P
   }
 
   return totalIncomeEur;
+}
+
+function sumAmounts(amounts: Prisma.Decimal[]): Prisma.Decimal {
+  let total = new Prisma.Decimal(0);
+  for (const amount of amounts) {
+    total = total.plus(amount);
+  }
+  return total;
 }

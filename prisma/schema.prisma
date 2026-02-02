@@ -30,7 +30,7 @@ enum Category {
 }
 
 // --------------------
-// NextAuth models
+// nextAuth models
 // --------------------
 model User {
   id            String    @id @default(cuid())
@@ -88,7 +88,7 @@ model VerificationToken {
 }
 
 // --------------------
-// Finance MVP models
+// finance MVP models
 // --------------------
 model Ledger {
   id   String     @id @default(cuid())
@@ -178,4 +178,5 @@ model RecurringItemVersion {
   recurringItem RecurringItem @relation(fields: [recurringItemId], references: [id], onDelete: Cascade)
 
   @@index([recurringItemId, validFrom])
+  @@index([validFrom, validTo])
 }
