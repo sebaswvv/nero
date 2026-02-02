@@ -9,7 +9,8 @@
     "start": "next start",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "get-ids": "tsx scripts/get-db-ids.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

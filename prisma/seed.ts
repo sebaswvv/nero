@@ -5,8 +5,23 @@ const prisma = new PrismaClient({
   accelerateUrl: process.env.PRISMA_DATABASE_URL,
 });
 
-const LEDGER_ID = "cmk2lsfxc0004eabx5iadw3hn";
-const USER_ID = "cmk2lpt0k0001eabxicp6qt7u";
+// Get IDs from command line arguments or environment variables
+const args = process.argv.slice(2);
+let LEDGER_ID: string | undefined;
+let USER_ID: string | undefined;
+
+// Parse command line arguments: --ledger-id=xxx --user-id=xxx
+for (const arg of args) {
+  if (arg.startsWith("--ledger-id=")) {
+    LEDGER_ID = arg.split("=")[1];
+  } else if (arg.startsWith("--user-id=")) {
+    USER_ID = arg.split("=")[1];
+  }
+}
+
+// Fallback to environment variables
+LEDGER_ID = LEDGER_ID || process.env.LEDGER_ID;
+USER_ID = USER_ID || process.env.USER_ID;
 
 const categories = [
   "groceries",
@@ -25,6 +40,47 @@ const incomeCategories = ["incidental_income"] as const;
 
 async function main() {
   console.log("🌱 Starting database seed...");
+
+  // Validate required IDs
+  if (!LEDGER_ID || !USER_ID) {
+    console.error("❌ Missing required parameters!");
+    console.error("");
+    console.error("Usage:");
+    console.error("  npm run seed -- --ledger-id=<ledger_id> --user-id=<user_id>");
+    console.error("");
+    console.error("Or set environment variables:");
+    console.error("  LEDGER_ID=<ledger_id> USER_ID=<user_id> npm run seed");
+    console.error("");
+    console.error("To get your IDs, query the database:");
+    console.error("  - User ID: SELECT id FROM \"User\" LIMIT 1;");
+    console.error("  - Ledger ID: SELECT id FROM \"Ledger\" LIMIT 1;");
+    process.exit(1);
+  }
+
+  // Verify the IDs exist in the database
+  console.log(`📋 Using Ledger ID: ${LEDGER_ID}`);
+  console.log(`👤 Using User ID: ${USER_ID}`);
+
+  const ledger = await prisma.ledger.findUnique({
+    where: { id: LEDGER_ID },
+  });
+  
+  const user = await prisma.user.findUnique({
+    where: { id: USER_ID },
+  });
+
+  if (!ledger) {
+    console.error(`❌ Ledger with ID ${LEDGER_ID} not found in database!`);
+    process.exit(1);
+  }
+
+  if (!user) {
+    console.error(`❌ User with ID ${USER_ID} not found in database!`);
+    process.exit(1);
+  }
+
+  console.log(`✅ Found ledger: ${ledger.name}`);
+  console.log(`✅ Found user: ${user.email || user.name || user.id}`);
 
   // clear existing data for this ledger
   console.log("🧹 Clearing existing transactions and recurring items...");
