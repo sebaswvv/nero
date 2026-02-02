@@ -98,7 +98,7 @@ async function main() {
         occurredAt: new Date(currentDate),
         direction: "income" as const,
         amountEur: amount,
-        category: "incidental_income",
+        category: "incidental_income" as const,
         description: generateIncomeDescription(),
       });
     }
