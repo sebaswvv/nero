@@ -2,6 +2,14 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import Navigation from "../components/Navigation";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import EmptyState from "../components/ui/EmptyState";
+import Badge from "../components/ui/Badge";
 
 type Ledger = {
   id: string;
@@ -89,64 +97,88 @@ export default function LedgersPage() {
   }
 
   return (
-    <div className="min-h-screen p-6 flex flex-col items-center">
-      <div className="w-full max-w-2xl space-y-6">
-        <h2 className="text-2xl font-semibold">Ledgers</h2>
-        {/* Ledger list */}
-        {loading ? (
-          <div>Loading...</div>
-        ) : error ? (
-          <div className="text-red-500">{error}</div>
-        ) : ledgers.length === 0 ? (
-          <div>No ledgers yet. Create one below.</div>
-        ) : (
-          <ul className="divide-y divide-gray-700 border border-gray-700 rounded">
-            {ledgers.map((ledger) => (
-              <li key={ledger.id} className="p-3 flex justify-between">
-                <span>{ledger.name}</span>
-                <span className="text-sm opacity-70">{ledger.type}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+    <>
+      <Navigation />
+      <div className="lg:ml-64 min-h-screen">
+        <div className="max-w-4xl mx-auto p-6 lg:p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Ledgers</h1>
+            <p className="text-slate-400">Manage your financial ledgers</p>
+          </div>
 
-        {/* Create ledger form */}
-        <form
-          onSubmit={handleCreateLedger}
-          className="space-y-4 border border-gray-700 rounded p-4"
-        >
-          <h3 className="text-lg font-medium">Create new ledger</h3>
-          {error && <div className="text-red-500">{error}</div>}
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-              placeholder="e.g. Household"
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="text-sm">Type</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as "personal" | "household")}
-              className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-            >
-              <option value="personal">Personal</option>
-              <option value="household">Household</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            disabled={creating}
-            className="px-4 py-2 rounded bg-blue-600 disabled:opacity-50"
-          >
-            {creating ? "Creating..." : "Create ledger"}
-          </button>
-        </form>
+          {/* Create ledger form */}
+          <Card className="mb-8">
+            <form onSubmit={handleCreateLedger} className="space-y-4">
+              <h3 className="text-xl font-semibold text-white">Create New Ledger</h3>
+
+              {error && (
+                <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  type="text"
+                  label="Ledger Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g., Household, Personal"
+                  fullWidth
+                />
+
+                <Select
+                  label="Type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value as "personal" | "household")}
+                  options={[
+                    { value: "personal", label: "Personal" },
+                    { value: "household", label: "Household" },
+                  ]}
+                  fullWidth
+                />
+              </div>
+
+              <Button type="submit" disabled={creating} variant="primary">
+                {creating ? "Creating..." : "Create Ledger"}
+              </Button>
+            </form>
+          </Card>
+
+          {/* Ledger list */}
+          <Card>
+            <h3 className="text-xl font-semibold text-white mb-4">Your Ledgers</h3>
+
+            {loading ? (
+              <LoadingSpinner className="py-12" />
+            ) : ledgers.length === 0 ? (
+              <EmptyState
+                icon="📒"
+                title="No ledgers yet"
+                description="Create your first ledger to start tracking your finances"
+              />
+            ) : (
+              <div className="space-y-3">
+                {ledgers.map((ledger) => (
+                  <div
+                    key={ledger.id}
+                    className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
+                  >
+                    <div>
+                      <h4 className="text-white font-medium">{ledger.name}</h4>
+                      <p className="text-sm text-slate-400">ID: {ledger.id.slice(0, 8)}...</p>
+                    </div>
+                    <Badge variant={ledger.type === "personal" ? "info" : "success"}>
+                      {ledger.type}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

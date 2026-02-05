@@ -1,6 +1,8 @@
 // app/components/analytics/NetBalanceSummary.tsx
 "use client";
 
+import Card from "../ui/Card";
+
 type NetBalanceSummary = {
   netBalanceEur: string;
 };
@@ -15,14 +17,17 @@ export default function NetBalanceSummaryCard({ summary }: Props) {
   const isPositive = !Number.isNaN(netNumber) && netNumber >= 0;
 
   return (
-    <div className="p-3 border border-gray-600 rounded">
-      <div className="text-sm opacity-75">Net balance</div>
-
-      <div className={`text-lg font-bold mt-1 ${isPositive ? "text-green-400" : "text-red-400"}`}>
-        € {net}
+    <Card>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-sm font-medium text-slate-400 mb-1">Net Balance</div>
+          <div className={`text-3xl font-bold ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
+            {isPositive ? "+" : ""}€{net}
+          </div>
+        </div>
+        <div className="text-4xl">{isPositive ? "📈" : "📉"}</div>
       </div>
-
-      <div className="text-xs opacity-60 mt-1">Income − expenses within the selected period</div>
-    </div>
+      <div className="text-xs text-slate-500">Income minus expenses for the selected period</div>
+    </Card>
   );
 }

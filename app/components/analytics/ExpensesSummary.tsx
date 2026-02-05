@@ -1,5 +1,8 @@
 "use client";
 
+import React from "react";
+import Card from "../ui/Card";
+
 export type ExpensesSummary = {
   totalExpensesEur: string;
   totalExpensesTransactionsEur: string;
@@ -13,48 +16,48 @@ type Props = {
 };
 
 export default function ExpensesSummaryCard({ summary }: Props) {
+  const topCategories = React.useMemo(
+    () =>
+      Object.entries(summary.perCategoryEur)
+        .sort((a, b) => Number(b[1]) - Number(a[1]))
+        .slice(0, 5),
+    [summary.perCategoryEur]
+  );
+
   return (
-    <div className="space-y-3">
-      <div className="text-sm font-semibold">Expenses</div>
-
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3 border border-gray-600 rounded">
-            <div className="text-xs opacity-70">Total expenses</div>
-            <div className="text-lg font-bold">€ {summary.totalExpensesEur}</div>
-          </div>
-          <div className="p-3 border border-gray-600 rounded">
-            <div className="text-xs opacity-70">Variable expenses</div>
-            <div className="text-lg font-bold">€ {summary.totalExpensesTransactionsEur}</div>
-            <div className="text-xs opacity-60">
-              {summary.totalExpenseTransactions} transactions
-            </div>
-          </div>
-          <div className="p-3 border border-gray-600 rounded">
-            <div className="text-xs opacity-70">Recurring expenses</div>
-            <div className="text-lg font-bold">€ {summary.totalRecurringExpensesEur}</div>
-          </div>
+    <Card>
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-sm font-medium text-slate-400 mb-1">Total Expenses</div>
+          <div className="text-3xl font-bold text-red-400">€{summary.totalExpensesEur}</div>
         </div>
+        <div className="text-4xl">💸</div>
+      </div>
 
-        <div className="border border-gray-600 rounded p-3">
-          <div className="text-sm font-semibold">By category</div>
-
-          {Object.keys(summary.perCategoryEur).length === 0 ? (
-            <div className="text-sm opacity-70 mt-2">No expenses in this period.</div>
-          ) : (
-            <ul className="mt-2 space-y-1 text-sm">
-              {Object.entries(summary.perCategoryEur)
-                .sort((a, b) => Number(b[1]) - Number(a[1]))
-                .map(([category, amount]) => (
-                  <li key={category} className="flex justify-between gap-4">
-                    <span className="capitalize">{category.replace(/_/g, " ")}</span>
-                    <span className="font-mono">€ {amount}</span>
-                  </li>
-                ))}
-            </ul>
-          )}
+      <div className="space-y-3 mt-4 pt-4 border-t border-slate-800">
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-400">Variable</span>
+          <span className="text-white font-medium">€{summary.totalExpensesTransactionsEur}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-slate-400">Recurring</span>
+          <span className="text-white font-medium">€{summary.totalRecurringExpensesEur}</span>
         </div>
       </div>
-    </div>
+
+      {topCategories.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="text-xs font-medium text-slate-400 mb-2">Top Categories</div>
+          <div className="space-y-2">
+            {topCategories.map(([category, amount]) => (
+              <div key={category} className="flex items-center justify-between text-sm">
+                <span className="text-slate-300 capitalize">{category.replace(/_/g, " ")}</span>
+                <span className="text-white font-mono">€{amount}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
   );
 }

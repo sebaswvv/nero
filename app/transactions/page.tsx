@@ -1,6 +1,15 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import React from "react";
+import Navigation from "../components/Navigation";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import EmptyState from "../components/ui/EmptyState";
+import Badge from "../components/ui/Badge";
 
 /* =======================
    Types
@@ -211,138 +220,208 @@ export default function TransactionsPage() {
      Render
   ======================= */
 
+  const totalExpenses = React.useMemo(
+    () =>
+      transactions
+        .filter((tx) => tx.direction === "expense")
+        .reduce((sum, tx) => sum + parseFloat(tx.amountEur), 0),
+    [transactions]
+  );
+
+  const totalIncome = React.useMemo(
+    () =>
+      transactions
+        .filter((tx) => tx.direction === "income")
+        .reduce((sum, tx) => sum + parseFloat(tx.amountEur), 0),
+    [transactions]
+  );
+
   return (
-    <div className="min-h-screen p-6 flex justify-center">
-      <div className="w-full max-w-4xl space-y-6">
-        <h2 className="text-2xl font-semibold">Transactions</h2>
+    <>
+      <Navigation />
+      <div className="lg:ml-64 min-h-screen">
+        <div className="max-w-7xl mx-auto p-6 lg:p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Transactions</h1>
+            <p className="text-slate-400">Track your income and expenses</p>
+          </div>
 
-        {error && <div className="text-red-500">{error}</div>}
+          {error && (
+            <div className="mb-6 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
 
-        {/* CREATE FORM (TOP) */}
-        <form onSubmit={handleCreate} className="border border-gray-700 rounded p-4 space-y-4">
-          <h3 className="text-lg font-medium">Create transaction</h3>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <Card padding="sm">
+              <div className="text-sm text-slate-400 mb-1">Total Expenses</div>
+              <div className="text-2xl font-bold text-red-400">€{totalExpenses.toFixed(2)}</div>
+            </Card>
+            <Card padding="sm">
+              <div className="text-sm text-slate-400 mb-1">Total Income</div>
+              <div className="text-2xl font-bold text-emerald-400">€{totalIncome.toFixed(2)}</div>
+            </Card>
+            <Card padding="sm">
+              <div className="text-sm text-slate-400 mb-1">Net</div>
+              <div
+                className={`text-2xl font-bold ${totalIncome - totalExpenses >= 0 ? "text-emerald-400" : "text-red-400"}`}
+              >
+                €{(totalIncome - totalExpenses).toFixed(2)}
+              </div>
+            </Card>
+          </div>
 
-          <input
-            placeholder="Amount (€)"
-            value={amountEur}
-            onChange={(e) => setAmountEur(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+          {/* CREATE FORM */}
+          <Card className="mb-6">
+            <form onSubmit={handleCreate} className="space-y-4">
+              <h3 className="text-xl font-semibold text-white">Add Transaction</h3>
 
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Input
+                  placeholder="Amount"
+                  value={amountEur}
+                  onChange={(e) => setAmountEur(e.target.value)}
+                  label="Amount (€)"
+                  fullWidth
+                />
 
-          <input
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+                <Select
+                  label="Category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  options={CATEGORIES.map((c) => ({
+                    value: c,
+                    label: c.replace(/_/g, " "),
+                  }))}
+                  fullWidth
+                />
 
-          <input
-            type="date"
-            value={occurredAt}
-            onChange={(e) => setOccurredAt(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+                <Select
+                  label="Type"
+                  value={direction}
+                  onChange={(e) => setDirection(e.target.value as any)}
+                  options={[
+                    { value: "expense", label: "Expense" },
+                    { value: "income", label: "Income" },
+                  ]}
+                  fullWidth
+                />
 
-          <select
-            value={direction}
-            onChange={(e) => setDirection(e.target.value as any)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
+                <Input
+                  type="date"
+                  value={occurredAt}
+                  onChange={(e) => setOccurredAt(e.target.value)}
+                  label="Date"
+                  fullWidth
+                />
 
-          <button
-            type="submit"
-            disabled={creating}
-            className="bg-blue-600 px-4 py-2 rounded disabled:opacity-50"
-          >
-            Create
-          </button>
-        </form>
+                <div className="sm:col-span-2">
+                  <Input
+                    placeholder="Optional description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    label="Description"
+                    fullWidth
+                  />
+                </div>
+              </div>
 
-        {/* FILTERS */}
-        <div className="flex flex-wrap gap-4 items-end">
-          <select
-            value={selectedLedger}
-            onChange={(e) => setSelectedLedger(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-          >
-            {ledgers.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
+              <Button type="submit" disabled={creating} variant="primary">
+                {creating ? "Adding..." : "Add Transaction"}
+              </Button>
+            </form>
+          </Card>
 
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+          {/* FILTERS */}
+          <Card className="mb-6">
+            <h3 className="text-lg font-semibold text-white mb-4">Filter Transactions</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Select
+                label="Ledger"
+                value={selectedLedger}
+                onChange={(e) => setSelectedLedger(e.target.value)}
+                options={ledgers.map((l) => ({ value: l.id, label: l.name }))}
+                fullWidth
+              />
 
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+              <Input
+                type="date"
+                label="From"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                fullWidth
+              />
+
+              <Input
+                type="date"
+                label="To"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                fullWidth
+              />
+            </div>
+          </Card>
+
+          {/* TRANSACTIONS LIST */}
+          <Card>
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Recent Transactions ({transactions.length})
+            </h3>
+
+            {loading ? (
+              <LoadingSpinner className="py-12" />
+            ) : transactions.length === 0 ? (
+              <EmptyState
+                icon="💰"
+                title="No transactions found"
+                description="Add your first transaction to start tracking your finances"
+              />
+            ) : (
+              <div className="space-y-3">
+                {transactions.map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <Badge variant={tx.direction === "income" ? "success" : "danger"} size="sm">
+                          {tx.direction}
+                        </Badge>
+                        <span className="text-sm text-slate-400 capitalize">
+                          {tx.category.replace(/_/g, " ")}
+                        </span>
+                      </div>
+                      <div className="text-white font-medium">
+                        {tx.description || "No description"}
+                      </div>
+                      <div className="text-sm text-slate-400 mt-1">
+                        {new Date(tx.occurredAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`text-xl font-bold ${tx.direction === "income" ? "text-emerald-400" : "text-red-400"}`}
+                      >
+                        {tx.direction === "expense" ? "-" : "+"}€{tx.amountEur}
+                      </div>
+                      <Button onClick={() => handleDelete(tx.id)} variant="danger" size="sm">
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
         </div>
-
-        {/* TABLE */}
-        {loading ? (
-          <div>Loading…</div>
-        ) : transactions.length === 0 ? (
-          <div>No transactions found.</div>
-        ) : (
-          <table className="w-full border border-gray-700 border-collapse">
-            <thead className="bg-gray-800">
-              <tr>
-                <th className="p-2 text-left">Date</th>
-                <th className="p-2 text-left">Category</th>
-                <th className="p-2 text-left">Description</th>
-                <th className="p-2 text-center">Dir</th>
-                <th className="p-2 text-right">Amount</th>
-                <th className="p-2 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="odd:bg-gray-900">
-                  <td className="p-2">{new Date(tx.occurredAt).toLocaleDateString()}</td>
-                  <td className="p-2 capitalize">{tx.category.replace(/_/g, " ")}</td>
-                  <td className="p-2">{tx.description ?? "-"}</td>
-                  <td className="p-2 text-center">{tx.direction}</td>
-                  <td className="p-2 text-right">
-                    {tx.direction === "expense" ? "-" : "+"}€ {tx.amountEur}
-                  </td>
-                  <td className="p-2 text-center">
-                    <button
-                      onClick={() => handleDelete(tx.id)}
-                      className="text-red-500 hover:text-red-400 text-sm"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </div>
-    </div>
+    </>
   );
 }
