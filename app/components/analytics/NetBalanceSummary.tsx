@@ -21,9 +21,7 @@ export default function NetBalanceSummaryCard({ summary }: Props) {
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="text-sm font-medium text-slate-400 mb-1">Net Balance</div>
-          <div
-            className={`text-3xl font-bold ${isPositive ? "text-emerald-400" : "text-red-400"}`}
-          >
+          <div className={`text-3xl font-bold ${isPositive ? "text-emerald-400" : "text-red-400"}`}>
             {isPositive ? "+" : ""}€{net}
           </div>
         </div>

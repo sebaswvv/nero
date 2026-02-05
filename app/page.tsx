@@ -69,9 +69,7 @@ export default async function HomePage() {
                     <div className="text-4xl">🔄</div>
                     <div>
                       <h3 className="text-lg font-semibold text-white mb-1">Recurring Items</h3>
-                      <p className="text-sm text-slate-400">
-                        Manage subscriptions and fixed costs
-                      </p>
+                      <p className="text-sm text-slate-400">Manage subscriptions and fixed costs</p>
                     </div>
                   </div>
                 </Card>

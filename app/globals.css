@@ -15,7 +15,11 @@
 body {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    system-ui,
+    -apple-system,
+    sans-serif;
   min-height: 100vh;
 }
 

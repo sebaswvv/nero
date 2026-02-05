@@ -19,10 +19,8 @@ export default function Button({
     "font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants = {
-    primary:
-      "bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-500 shadow-sm",
-    secondary:
-      "bg-slate-700 hover:bg-slate-600 text-white focus:ring-slate-500 shadow-sm",
+    primary: "bg-emerald-600 hover:bg-emerald-700 text-white focus:ring-emerald-500 shadow-sm",
+    secondary: "bg-slate-700 hover:bg-slate-600 text-white focus:ring-slate-500 shadow-sm",
     danger: "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 shadow-sm",
     ghost:
       "bg-transparent hover:bg-slate-800/50 text-slate-300 hover:text-white focus:ring-slate-500",

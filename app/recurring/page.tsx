@@ -386,9 +386,7 @@ export default function RecurringPage() {
 
                     {editingItemId === item.id && (
                       <div className="mt-4 pt-4 border-t border-slate-700">
-                        <h5 className="text-sm font-medium text-slate-300 mb-3">
-                          Add New Version
-                        </h5>
+                        <h5 className="text-sm font-medium text-slate-300 mb-3">Add New Version</h5>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <Input
                             placeholder="New amount"

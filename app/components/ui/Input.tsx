@@ -17,9 +17,7 @@ export default function Input({
 
   return (
     <div className={widthClass}>
-      {label && (
-        <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>
-      )}
+      {label && <label className="block text-sm font-medium text-slate-300 mb-1.5">{label}</label>}
       <input
         className={`px-4 py-2.5 bg-slate-800/50 border ${
           error ? "border-red-500" : "border-slate-700"
