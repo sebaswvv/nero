@@ -2,82 +2,96 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/api/auth-options";
 import AnalyticsOverview from "./components/AnalyticsOverview";
-import ApiKey from "./components/ApiKey";
+import Card from "./components/ui/Card";
+import Button from "./components/ui/Button";
+import Navigation from "./components/Navigation";
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
 
-  return (
-    <div className="min-h-screen p-6 flex justify-center">
-      <div className="w-full max-w-4xl space-y-8">
-        <div className="border border-gray-700 rounded p-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <div className="text-xl font-semibold">Nero</div>
-              <div className="text-sm opacity-70">Personal finance tracker</div>
-            </div>
-
-            {session ? (
-              <form action="/api/auth/signout" method="post">
-                <button className="px-4 py-2 rounded bg-gray-800 border border-gray-700">
-                  Sign out
-                </button>
-              </form>
-            ) : (
-              <form action="/api/auth/signin/google" method="post">
-                <button className="px-4 py-2 rounded bg-blue-600">Sign in with Google</button>
-              </form>
-            )}
-          </div>
-
-          {session && (
-            <div className="text-sm opacity-70 mt-3">
-              Signed in as <span className="font-mono">{session.user?.email}</span>
-              <div className="mt-2">
-                <ApiKey />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {session ? (
-          <>
-            <div className="border border-gray-700 rounded p-4">
-              <AnalyticsOverview />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Link
-                href="/ledgers"
-                className="border border-gray-700 rounded p-4 hover:bg-gray-900"
-              >
-                <div className="font-medium">Ledgers</div>
-                <div className="text-sm opacity-70">Create and manage ledgers</div>
-              </Link>
-
-              <Link
-                href="/recurring"
-                className="border border-gray-700 rounded p-4 hover:bg-gray-900"
-              >
-                <div className="font-medium">Recurring items</div>
-                <div className="text-sm opacity-70">Subscriptions and fixed costs</div>
-              </Link>
-
-              <Link
-                href="/transactions"
-                className="border border-gray-700 rounded p-4 hover:bg-gray-900"
-              >
-                <div className="font-medium">Transactions</div>
-                <div className="text-sm opacity-70">Add and review transactions</div>
-              </Link>
-            </div>
-          </>
-        ) : (
-          <div className="text-sm opacity-70">
-            Sign in to view analytics and manage your ledgers.
-          </div>
-        )}
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center" padding="lg">
+          <div className="text-6xl mb-6">💰</div>
+          <h1 className="text-3xl font-bold text-white mb-3">Welcome to Nero</h1>
+          <p className="text-slate-400 mb-8">
+            Take control of your finances with our modern personal finance tracker. Monitor
+            expenses, track income, and visualize your financial health.
+          </p>
+          <form action="/api/auth/signin/google" method="post">
+            <Button type="submit" variant="primary" size="lg" fullWidth>
+              Sign in with Google
+            </Button>
+          </form>
+        </Card>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <>
+      <Navigation />
+      <div className="lg:ml-64 min-h-screen">
+        <div className="max-w-7xl mx-auto p-6 lg:p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+            <p className="text-slate-400">Welcome back, {session.user?.email}</p>
+          </div>
+
+          {/* Analytics Overview */}
+          <div className="mb-8">
+            <AnalyticsOverview />
+          </div>
+
+          {/* Quick Actions Grid */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Link href="/ledgers">
+                <Card hover padding="md">
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">📒</div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Ledgers</h3>
+                      <p className="text-sm text-slate-400">
+                        Create and manage your financial ledgers
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+
+              <Link href="/recurring">
+                <Card hover padding="md">
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">🔄</div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Recurring Items</h3>
+                      <p className="text-sm text-slate-400">
+                        Manage subscriptions and fixed costs
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+
+              <Link href="/transactions">
+                <Card hover padding="md">
+                  <div className="flex items-start gap-4">
+                    <div className="text-4xl">💰</div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Transactions</h3>
+                      <p className="text-sm text-slate-400">Add and review your transactions</p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

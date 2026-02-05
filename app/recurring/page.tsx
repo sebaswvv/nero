@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import Navigation from "../components/Navigation";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import EmptyState from "../components/ui/EmptyState";
+import Badge from "../components/ui/Badge";
 
 /* =======================
    Types
@@ -236,144 +244,193 @@ export default function RecurringPage() {
   ======================= */
 
   return (
-    <div className="min-h-screen p-6 flex justify-center">
-      <div className="w-full max-w-4xl space-y-6">
-        <h2 className="text-2xl font-semibold">Recurring items</h2>
+    <>
+      <Navigation />
+      <div className="lg:ml-64 min-h-screen">
+        <div className="max-w-6xl mx-auto p-6 lg:p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Recurring Items</h1>
+            <p className="text-slate-400">Manage your subscriptions and fixed costs</p>
+          </div>
 
-        {error && <div className="text-red-500">{error}</div>}
+          {error && (
+            <div className="mb-6 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
 
-        {/* Ledger selector */}
-        <select
-          value={selectedLedger}
-          onChange={(e) => setSelectedLedger(e.target.value)}
-          className="px-3 py-2 rounded border border-gray-600 bg-transparent"
-        >
-          {ledgers.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
-          ))}
-        </select>
+          {/* Ledger selector */}
+          {ledgers.length > 0 && (
+            <Card className="mb-6">
+              <Select
+                label="Select Ledger"
+                value={selectedLedger}
+                onChange={(e) => setSelectedLedger(e.target.value)}
+                options={ledgers.map((l) => ({ value: l.id, label: l.name }))}
+                fullWidth
+              />
+            </Card>
+          )}
 
-        {/* Create form (TOP) */}
-        <form onSubmit={handleCreate} className="border border-gray-700 rounded p-4 space-y-3">
-          <h3 className="font-medium">Create recurring item</h3>
+          {/* Create form */}
+          <Card className="mb-6">
+            <form onSubmit={handleCreate} className="space-y-4">
+              <h3 className="text-xl font-semibold text-white">Add Recurring Item</h3>
 
-          <input
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  placeholder="Name (e.g., Netflix, Rent)"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  label="Name"
+                  fullWidth
+                />
 
-          <input
-            placeholder="Amount (€)"
-            value={amountEur}
-            onChange={(e) => setAmountEur(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+                <Input
+                  placeholder="Amount"
+                  value={amountEur}
+                  onChange={(e) => setAmountEur(e.target.value)}
+                  label="Amount (€)"
+                  fullWidth
+                />
 
-          <select
-            value={direction}
-            onChange={(e) => setDirection(e.target.value as any)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          >
-            <option value="expense">Expense</option>
-            <option value="income">Income</option>
-          </select>
+                <Select
+                  label="Type"
+                  value={direction}
+                  onChange={(e) => setDirection(e.target.value as any)}
+                  options={[
+                    { value: "expense", label: "Expense" },
+                    { value: "income", label: "Income" },
+                  ]}
+                  fullWidth
+                />
 
-          <input
-            type="date"
-            value={validFrom}
-            onChange={(e) => setValidFrom(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-gray-600 bg-transparent"
-          />
+                <Input
+                  type="date"
+                  value={validFrom}
+                  onChange={(e) => setValidFrom(e.target.value)}
+                  label="Valid From"
+                  fullWidth
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={creating}
-            className="bg-blue-600 px-4 py-2 rounded disabled:opacity-50"
-          >
-            Create
-          </button>
-        </form>
+              <Button type="submit" disabled={creating} variant="primary">
+                {creating ? "Creating..." : "Add Item"}
+              </Button>
+            </form>
+          </Card>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2">
-          {(["all", "expense", "income"] as DirectionFilter[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1 rounded border ${
-                filter === f ? "bg-blue-600 border-blue-600" : "border-gray-600 opacity-70"
-              }`}
-            >
-              {f === "all" ? "All" : f}
-            </button>
-          ))}
-        </div>
+          {/* Filter tabs */}
+          <div className="flex gap-2 mb-6">
+            {(["all", "expense", "income"] as DirectionFilter[]).map((f) => (
+              <Button
+                key={f}
+                onClick={() => setFilter(f)}
+                variant={filter === f ? "primary" : "ghost"}
+                size="sm"
+              >
+                {f === "all" ? "All" : f === "expense" ? "Expenses" : "Income"}
+              </Button>
+            ))}
+          </div>
 
-        {/* Items */}
-        {loading ? (
-          <div>Loading…</div>
-        ) : (
-          <div className="space-y-4">
-            {filteredItems.map((item) => {
-              const v = item.versions[0];
-              return (
-                <div key={item.id} className="border border-gray-700 rounded p-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm opacity-70">
-                        {v?.amountEur} € · {item.direction}
+          {/* Items */}
+          {loading ? (
+            <Card>
+              <LoadingSpinner className="py-12" />
+            </Card>
+          ) : filteredItems.length === 0 ? (
+            <Card>
+              <EmptyState
+                icon="🔄"
+                title="No recurring items"
+                description="Add your first recurring item to track subscriptions and fixed costs"
+              />
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {filteredItems.map((item) => {
+                const v = item.versions[0];
+                return (
+                  <Card key={item.id}>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="text-lg font-semibold text-white">{item.name}</h4>
+                          <Badge
+                            variant={item.direction === "income" ? "success" : "danger"}
+                            size="sm"
+                          >
+                            {item.direction}
+                          </Badge>
+                        </div>
+                        <div className="text-slate-400">
+                          <span className="text-2xl font-bold text-white">€{v?.amountEur}</span>
+                          <span className="text-sm ml-2">per month</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => setEditingItemId(item.id)}
+                          variant="secondary"
+                          size="sm"
+                        >
+                          Update Amount
+                        </Button>
+                        <Button onClick={() => handleDelete(item.id)} variant="danger" size="sm">
+                          Delete
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setEditingItemId(item.id)}
-                        className="text-sm text-blue-400"
-                      >
-                        Add version
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-sm text-red-500 hover:text-red-400"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
 
-                  {editingItemId === item.id && (
-                    <div className="grid grid-cols-3 gap-2 pt-3">
-                      <input
-                        placeholder="Amount"
-                        value={versionAmount}
-                        onChange={(e) => setVersionAmount(e.target.value)}
-                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
-                      />
-                      <input
-                        type="date"
-                        value={versionValidFrom}
-                        onChange={(e) => setVersionValidFrom(e.target.value)}
-                        className="px-2 py-1 rounded border border-gray-600 bg-transparent"
-                      />
-                      <button
-                        onClick={() => handleAddVersion(item.id)}
-                        disabled={addingVersion}
-                        className="bg-blue-600 rounded px-2 py-1 disabled:opacity-50"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
+                    {editingItemId === item.id && (
+                      <div className="mt-4 pt-4 border-t border-slate-700">
+                        <h5 className="text-sm font-medium text-slate-300 mb-3">
+                          Add New Version
+                        </h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <Input
+                            placeholder="New amount"
+                            value={versionAmount}
+                            onChange={(e) => setVersionAmount(e.target.value)}
+                            label="Amount (€)"
+                            fullWidth
+                          />
+                          <Input
+                            type="date"
+                            value={versionValidFrom}
+                            onChange={(e) => setVersionValidFrom(e.target.value)}
+                            label="Valid From"
+                            fullWidth
+                          />
+                          <div className="flex items-end gap-2">
+                            <Button
+                              onClick={() => handleAddVersion(item.id)}
+                              disabled={addingVersion}
+                              variant="primary"
+                              size="md"
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              onClick={() => setEditingItemId(null)}
+                              variant="ghost"
+                              size="md"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

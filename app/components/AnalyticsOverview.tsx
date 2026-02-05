@@ -5,6 +5,10 @@ import ExpensesSummaryCard from "./analytics/ExpensesSummary";
 import IncomeSummaryCard from "./analytics/IncomeSummary";
 import NetBalanceSummaryCard from "@/app/components/analytics/NetBalanceSummary";
 import { startOfCurrentMonth, endOfCurrentMonth } from "./analytics/dateUtils";
+import Card from "./ui/Card";
+import Select from "./ui/Select";
+import Input from "./ui/Input";
+import LoadingSpinner from "./ui/LoadingSpinner";
 
 type Ledger = {
   id: string;
@@ -99,60 +103,67 @@ export default function AnalyticsOverview() {
     fetchAnalytics();
   }, [selectedLedger, fromDate, toDate]);
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <div className="text-xl font-semibold">Analytics</div>
-          <div className="text-sm opacity-70">Income and expenses for a selected period.</div>
+  if (ledgers.length === 0) {
+    return (
+      <Card>
+        <div className="text-center py-8">
+          <p className="text-slate-400">Create a ledger to view analytics</p>
         </div>
+      </Card>
+    );
+  }
 
-        <div className="flex flex-wrap gap-3 items-end">
+  return (
+    <div className="space-y-6">
+      <Card>
+        <div className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs mb-1 opacity-70">Ledger</label>
-            <select
+            <h2 className="text-xl font-semibold text-white mb-1">Financial Overview</h2>
+            <p className="text-sm text-slate-400">
+              View your income, expenses, and balance for a selected period
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Select
+              label="Ledger"
               value={selectedLedger}
               onChange={(e) => setSelectedLedger(e.target.value)}
-              className="px-2 py-1 rounded border border-gray-600 bg-transparent text-sm"
-            >
-              {ledgers.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              options={ledgers.map((l) => ({ value: l.id, label: l.name }))}
+              fullWidth
+            />
 
-          <div>
-            <label className="block text-xs mb-1 opacity-70">From</label>
-            <input
+            <Input
               type="date"
+              label="From"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
-              className="px-2 py-1 rounded border border-gray-600 bg-transparent text-sm"
+              fullWidth
             />
-          </div>
 
-          <div>
-            <label className="block text-xs mb-1 opacity-70">To</label>
-            <input
+            <Input
               type="date"
+              label="To"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
-              className="px-2 py-1 rounded border border-gray-600 bg-transparent text-sm"
+              fullWidth
             />
           </div>
-        </div>
-      </div>
 
-      {error && <div className="text-sm text-red-500">{error}</div>}
+          {error && (
+            <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+        </div>
+      </Card>
 
       {loading ? (
-        <div className="text-sm opacity-70">Loading analytics...</div>
-      ) : !summary ? (
-        <div className="text-sm opacity-70">Select a ledger and date range.</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <LoadingSpinner className="py-12" size="lg" />
+        </Card>
+      ) : !summary ? null : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <IncomeSummaryCard summary={summary.income} />
           <ExpensesSummaryCard summary={summary.expenses} />
           <NetBalanceSummaryCard summary={summary.balance} />
