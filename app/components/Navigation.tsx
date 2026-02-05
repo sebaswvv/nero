@@ -43,15 +43,15 @@ export default function Navigation() {
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 border border-slate-800 rounded-lg text-white"
+        className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-slate-900 border border-slate-800 rounded-lg text-white"
       >
         {mobileMenuOpen ? "✕" : "☰"}
       </button>
 
       {/* Sidebar navigation */}
       <nav
-        className={`fixed top-0 left-0 h-full w-64 bg-slate-900/95 backdrop-blur-sm border-r border-slate-800 p-6 flex flex-col gap-6 z-40 transition-transform lg:translate-x-0 ${
-          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 right-0 lg:right-auto lg:left-0 h-full w-64 bg-slate-900/95 backdrop-blur-sm border-l lg:border-l-0 lg:border-r border-slate-800 p-6 flex flex-col gap-6 z-40 transition-transform lg:translate-x-0 ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div>
