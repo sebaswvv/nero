@@ -366,7 +366,9 @@ export default function RecurringPage() {
                           </Badge>
                         </div>
                         <div className="text-slate-400">
-                          <span className="text-2xl font-bold text-white">€{v?.amountEur}</span>
+                          <span className="text-2xl font-bold text-white">
+                            €{v?.amountEur || "0.00"}
+                          </span>
                           <span className="text-sm ml-2">per month</span>
                         </div>
                       </div>

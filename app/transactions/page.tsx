@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import React from "react";
 import Navigation from "../components/Navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -219,13 +220,21 @@ export default function TransactionsPage() {
      Render
   ======================= */
 
-  const totalExpenses = transactions
-    .filter((tx) => tx.direction === "expense")
-    .reduce((sum, tx) => sum + parseFloat(tx.amountEur), 0);
+  const totalExpenses = React.useMemo(
+    () =>
+      transactions
+        .filter((tx) => tx.direction === "expense")
+        .reduce((sum, tx) => sum + parseFloat(tx.amountEur), 0),
+    [transactions]
+  );
 
-  const totalIncome = transactions
-    .filter((tx) => tx.direction === "income")
-    .reduce((sum, tx) => sum + parseFloat(tx.amountEur), 0);
+  const totalIncome = React.useMemo(
+    () =>
+      transactions
+        .filter((tx) => tx.direction === "income")
+        .reduce((sum, tx) => sum + parseFloat(tx.amountEur), 0),
+    [transactions]
+  );
 
   return (
     <>

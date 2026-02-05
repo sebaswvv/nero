@@ -49,7 +49,7 @@ export default async function HomePage() {
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Link href="/ledgers">
+              <Link href="/ledgers" className="block">
                 <Card hover padding="md">
                   <div className="flex items-start gap-4">
                     <div className="text-4xl">📒</div>
@@ -63,7 +63,7 @@ export default async function HomePage() {
                 </Card>
               </Link>
 
-              <Link href="/recurring">
+              <Link href="/recurring" className="block">
                 <Card hover padding="md">
                   <div className="flex items-start gap-4">
                     <div className="text-4xl">🔄</div>
@@ -75,7 +75,7 @@ export default async function HomePage() {
                 </Card>
               </Link>
 
-              <Link href="/transactions">
+              <Link href="/transactions" className="block">
                 <Card hover padding="md">
                   <div className="flex items-start gap-4">
                     <div className="text-4xl">💰</div>

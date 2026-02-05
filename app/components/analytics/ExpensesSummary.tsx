@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Card from "../ui/Card";
 
 export type ExpensesSummary = {
@@ -15,9 +16,13 @@ type Props = {
 };
 
 export default function ExpensesSummaryCard({ summary }: Props) {
-  const topCategories = Object.entries(summary.perCategoryEur)
-    .sort((a, b) => Number(b[1]) - Number(a[1]))
-    .slice(0, 5);
+  const topCategories = React.useMemo(
+    () =>
+      Object.entries(summary.perCategoryEur)
+        .sort((a, b) => Number(b[1]) - Number(a[1]))
+        .slice(0, 5),
+    [summary.perCategoryEur]
+  );
 
   return (
     <Card>
