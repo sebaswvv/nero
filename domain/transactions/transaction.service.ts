@@ -1,10 +1,11 @@
 import { ConflictError, BadRequestError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
-import type { CreateTransactionBody } from "@/domain/transactions/transaction.schemas";
+import type { CreateTransactionBody, CreateTransactionsBody } from "@/domain/transactions/transaction.schemas";
 import type { DateRange } from "./transactions.repository";
 import {
   createTransactionRecord,
+  createManyTransactionRecords,
   listTransactionRecords,
   findTransactionForAccessCheck,
   deleteTransactionRecord,
@@ -17,6 +18,34 @@ export async function createTransaction(userId: string, body: CreateTransactionB
 
   try {
     return await createTransactionRecord(userId, body, occurredAt);
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
+    }
+    throw e;
+  }
+}
+
+export async function createTransactions(userId: string, body: CreateTransactionsBody) {
+  // handle single transaction (backward compatibility)
+  if (!Array.isArray(body)) {
+    return [await createTransaction(userId, body)];
+  }
+
+  // validate access to all ledgers upfront
+  const uniqueLedgerIds = [...new Set(body.map((t) => t.ledgerId))];
+  await Promise.all(uniqueLedgerIds.map((ledgerId) => requireLedgerAccess(userId, ledgerId)));
+
+  // prepare transactions with timestamps
+  const transactions = body.map((txn) => ({
+    body: txn,
+    occurredAt: txn.occurredAt ?? new Date(),
+  }));
+
+  try {
+    await createManyTransactionRecords(userId, transactions);
+    // return count for bulk operations
+    return { count: transactions.length };
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
       throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");

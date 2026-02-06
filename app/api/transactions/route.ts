@@ -4,9 +4,9 @@ import { jsonResponse } from "@/lib/api/http";
 import { getApiKey, getUserIdFromApiKey } from "@/lib/api/api-key";
 import { routeHandler, parseJsonBody, parseQuery } from "@/lib/api/validation";
 import { requireUserId } from "@/lib/api/auth";
-import { createTransaction, listTransactions } from "@/domain/transactions/transaction.service";
+import { createTransactions, listTransactions } from "@/domain/transactions/transaction.service";
 import {
-  CreateTransactionBodySchema,
+  CreateTransactionsBodySchema,
   ListTransactionsQuerySchema,
 } from "@/domain/transactions/transaction.schemas";
 import { resolveDateRange } from "@/lib/api/date-range";
@@ -26,10 +26,10 @@ export async function POST(req: Request) {
       userId = await requireUserId();
     }
 
-    const body = await parseJsonBody(req, CreateTransactionBodySchema);
+    const body = await parseJsonBody(req, CreateTransactionsBodySchema);
 
-    const transaction = await createTransaction(userId, body);
-    return jsonResponse(transaction, 201);
+    const result = await createTransactions(userId, body);
+    return jsonResponse(result, 201);
   });
 }
 

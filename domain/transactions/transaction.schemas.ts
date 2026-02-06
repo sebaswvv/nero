@@ -29,6 +29,13 @@ export const CreateTransactionBodySchema = z.object({
 
 export type CreateTransactionBody = z.infer<typeof CreateTransactionBodySchema>;
 
+export const CreateTransactionsBodySchema = z.union([
+  CreateTransactionBodySchema,
+  z.array(CreateTransactionBodySchema).min(1),
+]);
+
+export type CreateTransactionsBody = z.infer<typeof CreateTransactionsBodySchema>;
+
 export const ListTransactionsQuerySchema = z
   .object({
     ledgerId: IdSchema,

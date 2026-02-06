@@ -21,6 +21,23 @@ export async function createTransactionRecord(
   });
 }
 
+export async function createManyTransactionRecords(
+  userId: string,
+  transactions: Array<{ body: CreateTransactionBody; occurredAt: Date }>
+) {
+  return prisma.transaction.createMany({
+    data: transactions.map(({ body, occurredAt }) => ({
+      ledgerId: body.ledgerId,
+      userId,
+      occurredAt,
+      direction: body.direction,
+      amountEur: body.amountEur,
+      category: body.category,
+      description: body.description ?? null,
+    })),
+  });
+}
+
 export async function listTransactionRecords(ledgerId: string, range: DateRange) {
   return prisma.transaction.findMany({
     where: {
