@@ -28,3 +28,10 @@ export const CombinedAnalyticsSummaryQuerySchema = z.object({
   to: OccurredAtSchema,
 });
 export type CombinedAnalyticsSummaryQuery = z.infer<typeof CombinedAnalyticsSummaryQuerySchema>;
+
+export const MonthlyAveragesQuerySchema = z.object({
+  ledgerId: IdSchema,
+  from: OccurredAtSchema,
+  to: OccurredAtSchema,
+});
+export type MonthlyAveragesQuery = z.infer<typeof MonthlyAveragesQuerySchema>;

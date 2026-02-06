@@ -29,3 +29,18 @@ export type VariableExpensesAggregation = {
   totalExpensesTransactionsEur: Prisma.Decimal;
   totalExpenseTransactions: number;
 };
+
+export type CategoryAverage = {
+  category: string;
+  averageMonthlyEur: string;
+  totalMonths: number;
+  totalAmountEur: string;
+};
+
+export type MonthlyAveragesSummary = {
+  averagePerCategoryEur: CategoryAverage[];
+  totalAverageMonthlyEur: string;
+  totalMonths: number;
+  dateRangeFrom: string;
+  dateRangeTo: string;
+};

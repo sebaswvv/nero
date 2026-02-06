@@ -7,11 +7,14 @@ import {
   CombinedAnalyticsSummary,
   IncomeSummary,
   NetBalanceSummary,
+  MonthlyAveragesSummary,
+  CategoryAverage,
 } from "./analytics.types";
 import {
   getLatestActiveRecurringExpenseAmounts,
   getLatestActiveRecurringIncomeAmounts,
   getTransactionsGroupedByCategory,
+  getVariableExpensesGroupedByCategoryAndMonth,
 } from "./analytics.repository";
 
 export async function getCombinedAnalyticsSummary(
@@ -154,4 +157,59 @@ function sumAmounts(amounts: Prisma.Decimal[]): Prisma.Decimal {
     total = total.plus(amount);
   }
   return total;
+}
+
+export async function getMonthlyAveragesSummary(
+  userId: string,
+  ledgerId: string,
+  range: DateRange
+): Promise<MonthlyAveragesSummary> {
+  await requireLedgerAccess(userId, ledgerId);
+
+  const data = await getVariableExpensesGroupedByCategoryAndMonth(ledgerId, range);
+
+  // calculate the number of unique months in the range
+  const uniqueMonths = new Set<string>();
+  for (const row of data) {
+    uniqueMonths.add(`${row.year}-${row.month}`);
+  }
+  const totalMonths = uniqueMonths.size > 0 ? uniqueMonths.size : 1; // avoid division by zero
+
+  // aggregate by category across all months
+  const categoryTotals = new Map<string, Prisma.Decimal>();
+  for (const row of data) {
+    const current = categoryTotals.get(row.category) ?? new Prisma.Decimal(0);
+    categoryTotals.set(row.category, current.plus(row.sumAmountEur));
+  }
+
+  // calculate averages per category
+  const averagePerCategoryEur: CategoryAverage[] = [];
+  let grandTotal = new Prisma.Decimal(0);
+
+  for (const [category, total] of categoryTotals.entries()) {
+    const average = total.dividedBy(totalMonths);
+    grandTotal = grandTotal.plus(total);
+    
+    averagePerCategoryEur.push({
+      category,
+      averageMonthlyEur: average.toFixed(2),
+      totalMonths,
+      totalAmountEur: total.toFixed(2),
+    });
+  }
+
+  // sort by average descending
+  averagePerCategoryEur.sort(
+    (a, b) => Number(b.averageMonthlyEur) - Number(a.averageMonthlyEur)
+  );
+
+  const totalAverageMonthlyEur = grandTotal.dividedBy(totalMonths).toFixed(2);
+
+  return {
+    averagePerCategoryEur,
+    totalAverageMonthlyEur,
+    totalMonths,
+    dateRangeFrom: range.from.toISOString(),
+    dateRangeTo: range.to.toISOString(),
+  };
 }

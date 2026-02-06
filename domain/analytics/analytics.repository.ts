@@ -75,3 +75,50 @@ export async function getLatestActiveRecurringIncomeAmounts(
 
   return result.map((row) => row.amountEur);
 }
+
+export type MonthlyTransactionsByCategoryRow = {
+  category: string;
+  year: number;
+  month: number;
+  sumAmountEur: Prisma.Decimal;
+  count: number;
+};
+
+export async function getVariableExpensesGroupedByCategoryAndMonth(
+  ledgerId: string,
+  range: DateRange
+): Promise<MonthlyTransactionsByCategoryRow[]> {
+  // use raw SQL for efficient grouping by category and month
+  // extract year and month from occurredAt for grouping
+  const result = await prisma.$queryRaw<
+    Array<{
+      category: string;
+      year: number;
+      month: number;
+      sumAmountEur: Prisma.Decimal;
+      count: bigint;
+    }>
+  >`
+    SELECT 
+      category,
+      EXTRACT(YEAR FROM "occurredAt")::integer as year,
+      EXTRACT(MONTH FROM "occurredAt")::integer as month,
+      SUM("amountEur") as "sumAmountEur",
+      COUNT(*)::bigint as count
+    FROM "Transaction"
+    WHERE "ledgerId" = ${ledgerId}
+      AND direction = 'expense'
+      AND "occurredAt" >= ${range.from}
+      AND "occurredAt" <= ${range.to}
+    GROUP BY category, year, month
+    ORDER BY category, year, month
+  `;
+
+  return result.map((row) => ({
+    category: row.category,
+    year: row.year,
+    month: row.month,
+    sumAmountEur: row.sumAmountEur,
+    count: Number(row.count),
+  }));
+}
