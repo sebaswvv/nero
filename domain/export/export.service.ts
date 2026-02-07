@@ -2,6 +2,9 @@ import ExcelJS from "exceljs";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import { prisma } from "@/lib/api/db";
 
+const CURRENCY_FORMAT = CURRENCY_FORMAT;
+const HEADER_COLOR = HEADER_COLOR;
+
 type Transaction = {
   id: string;
   occurredAt: Date;
@@ -99,7 +102,7 @@ function addVariableTransactionsSheet(workbook: ExcelJS.Workbook, transactions: 
   headerRow.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FFE0E0E0" },
+    fgColor: { argb: HEADER_COLOR },
   };
 
   // Add data rows
@@ -116,7 +119,7 @@ function addVariableTransactionsSheet(workbook: ExcelJS.Workbook, transactions: 
   sheet.getColumn("date").numFmt = "yyyy-mm-dd";
 
   // Format amount column
-  sheet.getColumn("amount").numFmt = '€#,##0.00';
+  sheet.getColumn("amount").numFmt = CURRENCY_FORMAT;
   sheet.getColumn("amount").alignment = { horizontal: "right" };
 }
 
@@ -140,7 +143,7 @@ function addRecurringItemsSheet(workbook: ExcelJS.Workbook, items: RecurringItem
   headerRow.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FFE0E0E0" },
+    fgColor: { argb: HEADER_COLOR },
   };
 
   // Add data rows
@@ -164,7 +167,7 @@ function addRecurringItemsSheet(workbook: ExcelJS.Workbook, items: RecurringItem
   sheet.getColumn("versionDate").numFmt = "yyyy-mm-dd hh:mm:ss";
 
   // Format amount column
-  sheet.getColumn("amount").numFmt = '€#,##0.00';
+  sheet.getColumn("amount").numFmt = CURRENCY_FORMAT;
   sheet.getColumn("amount").alignment = { horizontal: "right" };
 }
 
@@ -185,7 +188,7 @@ function addIncomeSheet(workbook: ExcelJS.Workbook, transactions: Transaction[])
   headerRow.fill = {
     type: "pattern",
     pattern: "solid",
-    fgColor: { argb: "FFE0E0E0" },
+    fgColor: { argb: HEADER_COLOR },
   };
 
   // Add data rows
@@ -202,7 +205,7 @@ function addIncomeSheet(workbook: ExcelJS.Workbook, transactions: Transaction[])
   sheet.getColumn("date").numFmt = "yyyy-mm-dd";
 
   // Format amount column
-  sheet.getColumn("amount").numFmt = '€#,##0.00';
+  sheet.getColumn("amount").numFmt = CURRENCY_FORMAT;
   sheet.getColumn("amount").alignment = { horizontal: "right" };
 }
 
