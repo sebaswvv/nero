@@ -2,7 +2,7 @@ import ExcelJS from "exceljs";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import { prisma } from "@/lib/api/db";
 
-const CURRENCY_FORMAT = '€#,##0.00';
+const CURRENCY_FORMAT = "€#,##0.00";
 const HEADER_COLOR = "FFE0E0E0";
 
 type Transaction = {
