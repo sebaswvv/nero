@@ -9,6 +9,7 @@ import Select from "../components/ui/Select";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import EmptyState from "../components/ui/EmptyState";
 import Badge from "../components/ui/Badge";
+import { downloadExcelExport } from "@/lib/utils/export";
 
 /* =======================
    Types
@@ -244,33 +245,8 @@ export default function RecurringPage() {
     setExporting(true);
     setError(null);
 
-    try {
-      const params = new URLSearchParams({ ledgerId: selectedLedger });
-      const res = await fetch(`/api/export?${params}`, {
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err?.message ?? "Failed to export transactions");
-      }
-
-      // Download the file
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const today = new Date().toISOString().split("T")[0];
-      a.download = `transactions-export-${today}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setExporting(false);
-    }
+    await downloadExcelExport(selectedLedger, setError);
+    setExporting(false);
   }
 
   /* =======================
