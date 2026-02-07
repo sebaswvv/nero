@@ -25,3 +25,26 @@ As a user you can login with a Google account. From there you need to create a L
 For migrations:
 
 1. npx prisma migrate dev --name [name]
+
+## Database Backup:
+
+You can create SQL dumps of your database using the following commands:
+
+```bash
+# Dump to stdout
+npm run dump
+
+# Dump to a file
+npm run dump -- --output=backup.sql
+
+# Dump only schema (no data)
+npm run dump -- --output=schema.sql --schema-only
+
+# Dump only data (no schema)
+npm run dump -- --output=data.sql --data-only
+
+# Dump in custom binary format (smaller, faster)
+npm run dump -- --output=backup.dump --format=custom
+```
+
+**Note:** This requires `pg_dump` to be installed on your system and a direct PostgreSQL connection URL (not Prisma Accelerate URL).
