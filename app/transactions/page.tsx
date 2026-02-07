@@ -89,6 +89,7 @@ export default function TransactionsPage() {
   const [occurredAt, setOccurredAt] = useState(today());
   const [direction, setDirection] = useState<"expense" | "income">("expense");
   const [creating, setCreating] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   /* =======================
      Init
@@ -170,6 +171,48 @@ export default function TransactionsPage() {
      Create transaction
   ======================= */
 
+  async function handleExport() {
+    if (!selectedLedger) {
+      setError("Please select a ledger first");
+      return;
+    }
+
+    setExporting(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams({ ledgerId: selectedLedger });
+      const res = await fetch(`/api/export?${params}`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.message ?? "Failed to export transactions");
+      }
+
+      // Download the file
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const today = new Date().toISOString().split("T")[0];
+      a.download = `transactions-export-${today}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  /* =======================
+     Create transaction
+  ======================= */
+
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
     if (!amountEur.trim()) {
@@ -242,9 +285,18 @@ export default function TransactionsPage() {
       <div className="lg:ml-64 min-h-screen">
         <div className="max-w-7xl mx-auto p-6 lg:p-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Transactions</h1>
-            <p className="text-slate-400">Track your income and expenses</p>
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Transactions</h1>
+              <p className="text-slate-400">Track your income and expenses</p>
+            </div>
+            <Button
+              onClick={handleExport}
+              disabled={exporting || !selectedLedger}
+              variant="primary"
+            >
+              {exporting ? "Exporting..." : "📊 Export to Excel"}
+            </Button>
           </div>
 
           {error && (
