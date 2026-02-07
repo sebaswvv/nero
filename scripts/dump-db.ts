@@ -1,6 +1,5 @@
 import "dotenv/config";
-import { execSync, spawn } from "child_process";
-import { writeFileSync } from "fs";
+import { spawnSync } from "child_process";
 import { resolve } from "path";
 
 /**
@@ -129,8 +128,8 @@ Examples:
 
 function checkPgDump(): boolean {
   try {
-    execSync("pg_dump --version", { stdio: "pipe" });
-    return true;
+    const result = spawnSync("pg_dump", ["--version"], { stdio: "pipe" });
+    return result.status === 0;
   } catch (error) {
     return false;
   }
@@ -208,11 +207,17 @@ async function dumpDatabase(options: DumpOptions): Promise<void> {
   };
 
   try {
-    const result = execSync(`pg_dump ${args.join(" ")}`, {
+    const result = spawnSync("pg_dump", args, {
       env,
       stdio: options.output ? "pipe" : "inherit",
       maxBuffer: 100 * 1024 * 1024, // 100MB buffer
     });
+
+    if (result.status !== 0) {
+      throw new Error(
+        `pg_dump exited with code ${result.status}${result.stderr ? `: ${result.stderr.toString()}` : ""}`
+      );
+    }
 
     if (options.output) {
       console.log("✅ Database dump completed successfully!");

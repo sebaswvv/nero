@@ -52,8 +52,8 @@ async function main() {
     console.error("  LEDGER_ID=<ledger_id> USER_ID=<user_id> npm run seed");
     console.error("");
     console.error("To get your IDs, query the database:");
-    console.error("  - User ID: SELECT id FROM \"User\" LIMIT 1;");
-    console.error("  - Ledger ID: SELECT id FROM \"Ledger\" LIMIT 1;");
+    console.error('  - User ID: SELECT id FROM "User" LIMIT 1;');
+    console.error('  - Ledger ID: SELECT id FROM "Ledger" LIMIT 1;');
     process.exit(1);
   }
 
@@ -64,7 +64,7 @@ async function main() {
   const ledger = await prisma.ledger.findUnique({
     where: { id: LEDGER_ID },
   });
-  
+
   const user = await prisma.user.findUnique({
     where: { id: USER_ID },
   });
