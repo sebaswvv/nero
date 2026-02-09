@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { Transaction as PrismaTransaction } from "@prisma/client";
 import {
   DirectionSchema,
   OccurredAtSchema,
   IdSchema,
   MoneyEurSchema,
 } from "../../schemas/common.schemas";
+
+export type Transaction = PrismaTransaction;
 
 export const TransactionCategorySchema = z.enum([
   "groceries",

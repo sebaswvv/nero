@@ -189,7 +189,7 @@ export async function getMonthlyAveragesSummary(
   for (const [category, total] of categoryTotals.entries()) {
     const average = total.dividedBy(totalMonths);
     grandTotal = grandTotal.plus(total);
-    
+
     averagePerCategoryEur.push({
       category,
       averageMonthlyEur: average.toFixed(2),
@@ -199,9 +199,7 @@ export async function getMonthlyAveragesSummary(
   }
 
   // sort by average descending
-  averagePerCategoryEur.sort(
-    (a, b) => Number(b.averageMonthlyEur) - Number(a.averageMonthlyEur)
-  );
+  averagePerCategoryEur.sort((a, b) => Number(b.averageMonthlyEur) - Number(a.averageMonthlyEur));
 
   const totalAverageMonthlyEur = grandTotal.dividedBy(totalMonths).toFixed(2);
 

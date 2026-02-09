@@ -1,7 +1,11 @@
 import { ConflictError, BadRequestError } from "@/lib/api/errors";
 import { Prisma } from "@prisma/client";
 import { requireLedgerAccess } from "@/lib/api/ledger-access";
-import type { CreateTransactionBody, CreateTransactionsBody } from "@/domain/transactions/transaction.schemas";
+import type {
+  CreateTransactionBody,
+  CreateTransactionsBody,
+  Transaction,
+} from "@/domain/transactions/transaction.schemas";
 import type { DateRange } from "./transactions.repository";
 import {
   createTransactionRecord,
@@ -17,7 +21,11 @@ export async function createTransaction(userId: string, body: CreateTransactionB
   const occurredAt: Date = body.occurredAt ?? new Date();
 
   try {
-    return await createTransactionRecord(userId, body, occurredAt);
+    const transaction = await createTransactionRecord(userId, body, occurredAt);
+
+    // dont await this, let it run in the background
+    saveToGoogleSheets(transaction);
+    return transaction;
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
       throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
@@ -69,4 +77,27 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   await requireLedgerAccess(userId, transaction.ledgerId);
 
   return deleteTransactionRecord(transactionId);
+}
+
+async function saveToGoogleSheets(transaction: Transaction) {
+  const baseUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  if (!baseUrl) {
+    console.warn("GOOGLE_SHEETS_WEBHOOK_URL is not set, skipping Google Sheets integration");
+    return;
+  }
+
+  const params = new URLSearchParams({
+    categorie: `"${transaction.category}"`,
+    omschrijving: `"${transaction.description ?? ""}"`,
+    bedrag: `"${transaction.amountEur}"`,
+  });
+  const url = `${baseUrl}?${params.toString()}`;
+
+  console.log("Saving transaction to Google Sheets:", url);
+
+  try {
+    await fetch(url);
+  } catch (e) {
+    console.error("Failed to save transaction to Google Sheets", e);
+  }
 }
