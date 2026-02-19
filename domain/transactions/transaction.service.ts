@@ -22,9 +22,6 @@ export async function createTransaction(userId: string, body: CreateTransactionB
 
   try {
     const transaction = await createTransactionRecord(userId, body, occurredAt);
-
-    // dont await this, let it run in the background
-    saveToGoogleSheets(transaction);
     return transaction;
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
@@ -77,39 +74,4 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   await requireLedgerAccess(userId, transaction.ledgerId);
 
   return deleteTransactionRecord(transactionId);
-}
-
-async function saveToGoogleSheets(transaction: Transaction) {
-  const baseUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
-  if (!baseUrl) {
-    console.warn("GOOGLE_SHEETS_WEBHOOK_URL is not set, skipping Google Sheets integration");
-    return;
-  }
-
-  const params = new URLSearchParams({
-    categorie: `"${transaction.category}"`,
-    omschrijving: `"${transaction.description ?? ""}"`,
-    bedrag: `"${transaction.amountEur}"`,
-  });
-  const url = `${baseUrl}?${params.toString()}`;
-
-  console.log("Saving transaction to Google Sheets:", url);
-
-  const timeoutMs = 30000;
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Nero-Finance-App/1.0',
-      },
-    });
-    clearTimeout(timeoutId);
-    console.log("Successfully saved transaction to Google Sheets");
-  } catch (e) {
-    clearTimeout(timeoutId);
-    console.warn("Failed to save transaction to Google Sheets (non-critical):", e instanceof Error ? e.message : String(e));
-  }
 }
