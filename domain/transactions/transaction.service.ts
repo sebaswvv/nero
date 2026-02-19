@@ -95,9 +95,21 @@ async function saveToGoogleSheets(transaction: Transaction) {
 
   console.log("Saving transaction to Google Sheets:", url);
 
+  const timeoutMs = 30000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
-    await fetch(url);
+    await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Nero-Finance-App/1.0',
+      },
+    });
+    clearTimeout(timeoutId);
+    console.log("Successfully saved transaction to Google Sheets");
   } catch (e) {
-    console.error("Failed to save transaction to Google Sheets", e);
+    clearTimeout(timeoutId);
+    console.warn("Failed to save transaction to Google Sheets (non-critical):", e instanceof Error ? e.message : String(e));
   }
 }
