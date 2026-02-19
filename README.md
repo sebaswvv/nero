@@ -25,3 +25,6 @@ As a user you can login with a Google account. From there you need to create a L
 For migrations:
 
 1. npx prisma migrate dev --name [name]
+
+For backups:
+npm run backup

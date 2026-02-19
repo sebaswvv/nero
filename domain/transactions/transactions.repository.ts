@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/api/db";
-import type { CreateTransactionBody } from "@/domain/transactions/transaction.schemas";
+import type { CreateTransactionBody, UpdateTransactionBody } from "@/domain/transactions/transaction.schemas";
 
 export type DateRange = { from: Date; to: Date };
 
@@ -61,5 +61,23 @@ export async function findTransactionForAccessCheck(transactionId: string) {
 export async function deleteTransactionRecord(transactionId: string) {
   return prisma.transaction.delete({
     where: { id: transactionId },
+  });
+}
+
+export async function updateTransactionRecord(
+  transactionId: string,
+  body: UpdateTransactionBody
+) {
+  const updateData: any = {};
+
+  if (body.amountEur !== undefined) updateData.amountEur = body.amountEur;
+  if (body.category !== undefined) updateData.category = body.category;
+  if (body.description !== undefined) updateData.description = body.description;
+  if (body.occurredAt !== undefined) updateData.occurredAt = body.occurredAt;
+  if (body.direction !== undefined) updateData.direction = body.direction;
+
+  return prisma.transaction.update({
+    where: { id: transactionId },
+    data: updateData,
   });
 }

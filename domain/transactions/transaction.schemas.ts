@@ -51,3 +51,13 @@ export const ListTransactionsQuerySchema = z
   });
 
 export type ListTransactionsQuery = z.infer<typeof ListTransactionsQuerySchema>;
+
+export const UpdateTransactionBodySchema = z.object({
+  amountEur: MoneyEurSchema.optional(),
+  category: TransactionCategorySchema.optional(),
+  description: z.string().optional().nullable(),
+  occurredAt: OccurredAtSchema.optional(),
+  direction: DirectionSchema.optional(),
+});
+
+export type UpdateTransactionBody = z.infer<typeof UpdateTransactionBodySchema>;

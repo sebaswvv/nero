@@ -90,6 +90,23 @@ export default function TransactionsPage() {
   const [direction, setDirection] = useState<"expense" | "income">("expense");
   const [creating, setCreating] = useState(false);
 
+  // edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{
+    amountEur: string;
+    category: string;
+    description: string;
+    occurredAt: string;
+    direction: "expense" | "income";
+  }>({
+    amountEur: "",
+    category: CATEGORIES[0],
+    description: "",
+    occurredAt: today(),
+    direction: "expense",
+  });
+  const [updating, setUpdating] = useState(false);
+
   /* =======================
      Init
   ======================= */
@@ -213,6 +230,82 @@ export default function TransactionsPage() {
       setError((e as Error).message);
     } finally {
       setCreating(false);
+    }
+  }
+
+  /* =======================
+     Edit transaction
+  ======================= */
+
+  function formatDateForInput(dateString: string): string {
+    const date = new Date(dateString);
+    return toDateInputValue(date);
+  }
+
+  function startEdit(transaction: Transaction) {
+    setEditingId(transaction.id);
+    setEditForm({
+      amountEur: transaction.amountEur,
+      category: transaction.category,
+      description: transaction.description || "",
+      occurredAt: formatDateForInput(transaction.occurredAt),
+      direction: transaction.direction,
+    });
+    setError(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditForm({
+      amountEur: "",
+      category: CATEGORIES[0],
+      description: "",
+      occurredAt: today(),
+      direction: "expense",
+    });
+  }
+
+  async function handleUpdate(e: FormEvent) {
+    e.preventDefault();
+    if (!editForm.amountEur.trim()) {
+      setError("Amount is required");
+      return;
+    }
+
+    if (!editingId) return;
+
+    setUpdating(true);
+    setError(null);
+
+    try {
+      const body: any = {
+        amountEur: editForm.amountEur.trim(),
+        category: editForm.category,
+        direction: editForm.direction,
+        occurredAt: editForm.occurredAt,
+      };
+      
+      // Include description even if empty (allows clearing it)
+      body.description = editForm.description.trim() || null;
+
+      const res = await fetch(`/api/transactions/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.message ?? "Failed to update transaction");
+      }
+
+      cancelEdit();
+      await fetchTransactions(selectedLedger, fromDate, toDate);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -380,43 +473,143 @@ export default function TransactionsPage() {
               />
             ) : (
               <div className="space-y-3">
-                {transactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <Badge variant={tx.direction === "income" ? "success" : "danger"} size="sm">
-                          {tx.direction}
-                        </Badge>
-                        <span className="text-sm text-slate-400 capitalize">
-                          {tx.category.replace(/_/g, " ")}
-                        </span>
-                      </div>
-                      <div className="text-white font-medium">
-                        {tx.description || "No description"}
-                      </div>
-                      <div className="text-sm text-slate-400 mt-1">
-                        {new Date(tx.occurredAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`text-xl font-bold ${tx.direction === "income" ? "text-emerald-400" : "text-red-400"}`}
+                {transactions.map((tx) => {
+                  const isEditing = editingId === tx.id;
+
+                  if (isEditing) {
+                    // EDIT FORM
+                    return (
+                      <form
+                        key={tx.id}
+                        onSubmit={handleUpdate}
+                        className="p-4 bg-slate-800/50 rounded-lg border border-blue-500/50"
                       >
-                        {tx.direction === "expense" ? "-" : "+"}€{tx.amountEur}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                          <Input
+                            placeholder="Amount"
+                            value={editForm.amountEur}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, amountEur: e.target.value })
+                            }
+                            label="Amount (€)"
+                            fullWidth
+                          />
+
+                          <Select
+                            label="Category"
+                            value={editForm.category}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, category: e.target.value })
+                            }
+                            options={CATEGORIES.map((c) => ({
+                              value: c,
+                              label: c.replace(/_/g, " "),
+                            }))}
+                            fullWidth
+                          />
+
+                          <Select
+                            label="Type"
+                            value={editForm.direction}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                direction: e.target.value as "expense" | "income",
+                              })
+                            }
+                            options={[
+                              { value: "expense", label: "Expense" },
+                              { value: "income", label: "Income" },
+                            ]}
+                            fullWidth
+                          />
+
+                          <Input
+                            type="date"
+                            value={editForm.occurredAt}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, occurredAt: e.target.value })
+                            }
+                            label="Date"
+                            fullWidth
+                          />
+
+                          <div className="sm:col-span-2">
+                            <Input
+                              placeholder="Optional description"
+                              value={editForm.description}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, description: e.target.value })
+                              }
+                              label="Description"
+                              fullWidth
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button type="submit" disabled={updating} variant="primary" size="sm">
+                            {updating ? "Saving..." : "Save"}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={cancelEdit}
+                            disabled={updating}
+                            variant="secondary"
+                            size="sm"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
+                    );
+                  }
+
+                  // NORMAL VIEW
+                  return (
+                    <div
+                      key={tx.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <Badge
+                            variant={tx.direction === "income" ? "success" : "danger"}
+                            size="sm"
+                          >
+                            {tx.direction}
+                          </Badge>
+                          <span className="text-sm text-slate-400 capitalize">
+                            {tx.category.replace(/_/g, " ")}
+                          </span>
+                        </div>
+                        <div className="text-white font-medium">
+                          {tx.description || "No description"}
+                        </div>
+                        <div className="text-sm text-slate-400 mt-1">
+                          {new Date(tx.occurredAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </div>
                       </div>
-                      <Button onClick={() => handleDelete(tx.id)} variant="danger" size="sm">
-                        Delete
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`text-xl font-bold ${tx.direction === "income" ? "text-emerald-400" : "text-red-400"}`}
+                        >
+                          {tx.direction === "expense" ? "-" : "+"}€{tx.amountEur}
+                        </div>
+                        <Button onClick={() => startEdit(tx)} variant="secondary" size="sm">
+                          Edit
+                        </Button>
+                        <Button onClick={() => handleDelete(tx.id)} variant="danger" size="sm">
+                          Delete
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </Card>

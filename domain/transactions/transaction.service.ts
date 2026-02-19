@@ -5,6 +5,7 @@ import type {
   CreateTransactionBody,
   CreateTransactionsBody,
   Transaction,
+  UpdateTransactionBody,
 } from "@/domain/transactions/transaction.schemas";
 import type { DateRange } from "./transactions.repository";
 import {
@@ -13,6 +14,7 @@ import {
   listTransactionRecords,
   findTransactionForAccessCheck,
   deleteTransactionRecord,
+  updateTransactionRecord,
 } from "./transactions.repository";
 
 export async function createTransaction(userId: string, body: CreateTransactionBody) {
@@ -74,4 +76,27 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   await requireLedgerAccess(userId, transaction.ledgerId);
 
   return deleteTransactionRecord(transactionId);
+}
+
+export async function updateTransaction(
+  userId: string,
+  transactionId: string,
+  body: UpdateTransactionBody
+) {
+  const transaction = await findTransactionForAccessCheck(transactionId);
+
+  if (!transaction) {
+    throw new BadRequestError("INVALID_TRANSACTION", "Transaction not found");
+  }
+
+  await requireLedgerAccess(userId, transaction.ledgerId);
+
+  try {
+    return await updateTransactionRecord(transactionId, body);
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
+    }
+    throw e;
+  }
 }
