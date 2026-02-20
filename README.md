@@ -9,6 +9,7 @@ The API-routes talk with the respective service layers that handle business logi
 
 ## Features:
 
+
 As a user you can login with a Google account. From there you need to create a Ledger to track all expenses and incomes. There are two types of financial transactions:
 
 - Recurring: These are recurring expenses/incomes (Salary or Rent).
