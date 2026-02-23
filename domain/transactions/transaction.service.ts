@@ -24,11 +24,14 @@ export async function createTransaction(userId: string, body: CreateTransactionB
 
   try {
     const transaction = await createTransactionRecord(userId, body, occurredAt);
+    console.log(`[transaction.service] Created transaction id=${transaction.id} user=${userId} ledger=${body.ledgerId} amount=${body.amountEur} category=${body.category}`);
     return transaction;
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      console.error(`[transaction.service] Unique constraint violation, user=${userId} ledger=${body.ledgerId}`);
       throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
     }
+    console.error(`[transaction.service] Unexpected error creating transaction, user=${userId} ledger=${body.ledgerId}`, e);
     throw e;
   }
 }
@@ -55,8 +58,10 @@ export async function createTransactions(userId: string, body: CreateTransaction
     return { count: transactions.length };
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      console.error("[transaction.service] Unique constraint violation during bulk insert, userId=", userId);
       throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
     }
+    console.error("[transaction.service] Unexpected error during bulk insert, userId=", userId, e);
     throw e;
   }
 }
@@ -70,12 +75,15 @@ export async function deleteTransaction(userId: string, transactionId: string) {
   const transaction = await findTransactionForAccessCheck(transactionId);
 
   if (!transaction) {
+    console.warn(`[transaction.service] Delete attempted on missing transaction id=${transactionId} user=${userId}`);
     throw new BadRequestError("INVALID_TRANSACTION", "Transaction not found");
   }
 
   await requireLedgerAccess(userId, transaction.ledgerId);
 
-  return deleteTransactionRecord(transactionId);
+  const result = await deleteTransactionRecord(transactionId);
+  console.log(`[transaction.service] Deleted transaction id=${transactionId} user=${userId} ledger=${transaction.ledgerId}`);
+  return result;
 }
 
 export async function updateTransaction(
@@ -86,15 +94,19 @@ export async function updateTransaction(
   const transaction = await findTransactionForAccessCheck(transactionId);
 
   if (!transaction) {
+    console.warn(`[transaction.service] Update attempted on missing transaction id=${transactionId} user=${userId}`);
     throw new BadRequestError("INVALID_TRANSACTION", "Transaction not found");
   }
 
   await requireLedgerAccess(userId, transaction.ledgerId);
 
   try {
-    return await updateTransactionRecord(transactionId, body);
+    const updated = await updateTransactionRecord(transactionId, body);
+    console.log(`[transaction.service] Updated transaction id=${transactionId} user=${userId} ledger=${transaction.ledgerId}`);
+    return updated;
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      console.error(`[transaction.service] Unique constraint violation on update, id=${transactionId} user=${userId}`);
       throw new ConflictError("UNIQUE_CONSTRAINT", "Unique constraint violation");
     }
     throw e;

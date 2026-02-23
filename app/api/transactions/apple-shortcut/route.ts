@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     if (apiKey) {
       const id = await getUserIdFromApiKey(apiKey);
       if (!id) {
+        console.warn("[apple-shortcut] Invalid API key used");
         return jsonResponse({ error: "Invalid API key" }, 401);
       }
       userId = id;
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
     try {
       parsed = parseShortcutOutput(body.output);
     } catch (err) {
+      console.error("[apple-shortcut] Failed to parse shortcut output:", err instanceof Error ? err.message : err, "| raw output:", body.output);
       return jsonResponse(
         { error: err instanceof Error ? err.message : "Failed to parse shortcut output" },
         400
@@ -39,6 +41,7 @@ export async function POST(req: Request) {
 
     const categoryResult = TransactionCategorySchema.safeParse(parsed.category);
     if (!categoryResult.success) {
+      console.error("[apple-shortcut] Invalid category:", parsed.category);
       return jsonResponse(
         { error: `Invalid category "${parsed.category}". Must be one of: ${TransactionCategorySchema.options.join(", ")}` },
         400
@@ -52,9 +55,11 @@ export async function POST(req: Request) {
       description: parsed.description || undefined,
     });
     if (!createBodyResult.success) {
+      console.error("[apple-shortcut] Validation error:", createBodyResult.error.message);
       return jsonResponse({ error: "VALIDATION_ERROR", message: createBodyResult.error.message }, 400);
     }
 
+    console.log(`[apple-shortcut] Creating transaction for user=${userId} ledger=${body.ledgerId} amount=${parsed.amountEur} category=${categoryResult.data}`);
     const result = await createTransactions(userId, createBodyResult.data);
     return jsonResponse(result, 201);
   });

@@ -16,6 +16,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     const params = await context.params;
     const { id } = parseParams(params, ParamsSchema);
+    console.log(`[recurring-items/${id}] DELETE user=${userId}`);
 
     await deleteRecurringItem(userId, id);
     return jsonResponse({ success: true });

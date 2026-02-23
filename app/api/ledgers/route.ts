@@ -10,6 +10,7 @@ export async function POST(req: Request) {
   return routeHandler(async () => {
     const userId = await requireUserId();
     const body = await parseJsonBody(req, CreateLedgerBodySchema);
+    console.log(`[ledgers] POST user=${userId} name=${body.name}`);
 
     const ledger = await createLedger(userId, body);
     return jsonResponse(ledger, 201);

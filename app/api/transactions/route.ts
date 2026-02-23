@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     if (apiKey) {
       const id = await getUserIdFromApiKey(apiKey);
       if (!id) {
+        console.warn("[transactions] Invalid API key used");
         return jsonResponse({ error: "Invalid API key" }, 401);
       }
       userId = id;
@@ -27,6 +28,8 @@ export async function POST(req: Request) {
     }
 
     const body = await parseJsonBody(req, CreateTransactionsBodySchema);
+    const count = Array.isArray(body) ? body.length : 1;
+    console.log(`[transactions] POST user=${userId} count=${count}`);
 
     const result = await createTransactions(userId, body);
     return jsonResponse(result, 201);

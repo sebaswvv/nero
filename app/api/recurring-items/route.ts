@@ -11,6 +11,7 @@ export async function POST(req: Request) {
   return routeHandler(async () => {
     const userId = await requireUserId();
     const body = await parseJsonBody(req, CreateRecurringItemBodySchema);
+    console.log(`[recurring-items] POST user=${userId} ledger=${body.ledgerId}`);
 
     const item = await createRecurringItem(userId, body);
     return jsonResponse(item, 201);

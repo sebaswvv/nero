@@ -19,6 +19,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     const { id } = parseParams(params, ParamsSchema);
 
     const body = await parseJsonBody(request, UpdateTransactionBodySchema);
+    console.log(`[transactions/${id}] PUT user=${userId}`);
 
     const transaction = await updateTransaction(userId, id, body);
     return jsonResponse(transaction);
@@ -31,6 +32,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     const params = await context.params;
     const { id } = parseParams(params, ParamsSchema);
+    console.log(`[transactions/${id}] DELETE user=${userId}`);
 
     await deleteTransaction(userId, id);
     return jsonResponse({ success: true });
