@@ -167,7 +167,7 @@ export default function LedgersPage() {
                   >
                     <div>
                       <h4 className="text-white font-medium">{ledger.name}</h4>
-                      <p className="text-sm text-slate-400">ID: {ledger.id.slice(0, 8)}...</p>
+                      <p className="text-sm text-slate-400 font-mono">{ledger.id}</p>
                     </div>
                     <Badge variant={ledger.type === "personal" ? "info" : "success"}>
                       {ledger.type}

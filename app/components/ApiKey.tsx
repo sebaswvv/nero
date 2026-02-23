@@ -8,18 +8,14 @@ export default function ApiKey() {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [apiKey, setApiKey] = useState<string | null>(null);
 
   const fetchApiKey = async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/key");
-      if (!res.ok) {
-        throw new Error("Failed to fetch API key");
-      }
+      if (!res.ok) throw new Error("Failed to fetch API key");
       const data = await res.json();
-      setApiKey(data.apiKey);
       await navigator.clipboard.writeText(data.apiKey);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -31,16 +27,20 @@ export default function ApiKey() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col gap-1">
       <button
         onClick={fetchApiKey}
         disabled={loading}
-        className="px-4 py-2 rounded bg-gray-800 border border-gray-700"
+        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-slate-400 hover:text-white hover:bg-slate-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? "Loading..." : "Copy API Key"}
+        <span className="text-xl">{copied ? "✅" : loading ? "⏳" : "🔑"}</span>
+        <span className="font-medium">
+          {loading ? "Loading..." : copied ? "Copied!" : "Copy API Key"}
+        </span>
       </button>
-      {copied && <span className="ml-2 text-green-500">Copied!</span>}
-      {error && <div className="mt-2 text-red-500">Error: {error}</div>}
+      {error && (
+        <p className="px-4 text-xs text-red-400">{error}</p>
+      )}
     </div>
   );
 }

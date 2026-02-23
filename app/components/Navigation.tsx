@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import ApiKey from "@/app/components/ApiKey";
 
 interface NavLinkProps {
   href: string;
@@ -72,7 +73,8 @@ export default function Navigation() {
           ))}
         </div>
 
-        <div className="mt-auto pt-6 border-t border-slate-800">
+        <div className="mt-auto pt-6 border-t border-slate-800 flex flex-col gap-1">
+          <ApiKey />
           <form action="/api/auth/signout" method="post">
             <button
               type="submit"
