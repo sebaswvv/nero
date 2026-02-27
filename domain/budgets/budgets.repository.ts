@@ -53,6 +53,12 @@ export async function deleteBudgetAllocationRecord(budgetAllocationId: string) {
   });
 }
 
+export async function deleteAllBudgetAllocationRecordsForMonth(ledgerId: string, yearMonth: string) {
+  return prisma.budgetAllocation.deleteMany({
+    where: { ledgerId, yearMonth },
+  });
+}
+
 export async function listLatestRecurringAmountsForMonth(
   ledgerId: string,
   direction: TransactionDirection,

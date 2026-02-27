@@ -5,10 +5,14 @@ import type {
   CreateBudgetAllocationBody,
   ListBudgetAllocationsQuery,
   UpdateBudgetAllocationBody,
+  CopyBudgetAllocationsBody,
+  DeleteAllBudgetAllocationsQuery,
+  BudgetCategory,
 } from "./budgets.schema";
 import {
   createBudgetAllocationRecord,
   deleteBudgetAllocationRecord,
+  deleteAllBudgetAllocationRecordsForMonth,
   findBudgetAllocationForAccessCheck,
   listBudgetAllocationRecords,
   listLatestRecurringAmountsForMonth,
@@ -80,6 +84,54 @@ export async function deleteBudgetAllocation(userId: string, budgetAllocationId:
   console.log(
     `[budgets.service] Deleted budget allocation id=${budgetAllocationId} user=${userId} ledger=${budget.ledgerId}`
   );
+}
+
+export async function copyBudgetAllocations(userId: string, body: CopyBudgetAllocationsBody) {
+  await requireLedgerAccess(userId, body.ledgerId);
+
+  const fromAllocations = await listBudgetAllocationRecords(body.ledgerId, body.fromYearMonth);
+  if (fromAllocations.length === 0) {
+    throw new BadRequestError("NO_ALLOCATIONS", `No allocations found for ${body.fromYearMonth}`);
+  }
+
+  let copied = 0;
+  let skipped = 0;
+  for (const alloc of fromAllocations) {
+    try {
+      await createBudgetAllocationRecord(userId, {
+        ledgerId: body.ledgerId,
+        yearMonth: body.toYearMonth,
+        category: (alloc.category ?? undefined) as BudgetCategory | undefined,
+        name: alloc.name ?? undefined,
+        budgetAmountEur: alloc.budgetAmountEur.toFixed(2),
+      });
+      copied++;
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+        skipped++;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  console.log(
+    `[budgets.service] Copied allocations from ${body.fromYearMonth} to ${body.toYearMonth} ledger=${body.ledgerId} copied=${copied} skipped=${skipped}`
+  );
+  return { copied, skipped, total: fromAllocations.length };
+}
+
+export async function deleteAllBudgetAllocationsForMonth(
+  userId: string,
+  query: DeleteAllBudgetAllocationsQuery
+) {
+  await requireLedgerAccess(userId, query.ledgerId);
+
+  const result = await deleteAllBudgetAllocationRecordsForMonth(query.ledgerId, query.yearMonth);
+  console.log(
+    `[budgets.service] Deleted all allocations for ledger=${query.ledgerId} yearMonth=${query.yearMonth} count=${result.count}`
+  );
+  return { deleted: result.count };
 }
 
 export async function getBudgetOverview(userId: string, query: ListBudgetAllocationsQuery) {

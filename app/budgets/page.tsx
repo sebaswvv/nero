@@ -89,6 +89,17 @@ function formatEur(amount: string | number): string {
   return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
 }
 
+function getPrevYearMonth(yearMonth: string): string {
+  const [y, m] = yearMonth.split("-").map(Number);
+  if (m === 1) return `${y - 1}-12`;
+  return `${y}-${String(m - 1).padStart(2, "0")}`;
+}
+
+function formatYearMonth(ym: string): string {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleString("default", { month: "short", year: "numeric" });
+}
+
 /* =======================
    Sub-components
 ======================= */
@@ -233,6 +244,10 @@ export default function BudgetsPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const [copying, setCopying] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false);
+
   useEffect(() => {
     async function init() {
       try {
@@ -349,6 +364,48 @@ export default function BudgetsPage() {
     }
   }
 
+  async function handleCopyFromPrev() {
+    if (!selectedLedger || !yearMonth) return;
+    setCopying(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/budgets/copy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ledgerId: selectedLedger,
+          fromYearMonth: getPrevYearMonth(yearMonth),
+          toYearMonth: yearMonth,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message ?? "Failed to copy allocations");
+      await fetchData();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setCopying(false);
+    }
+  }
+
+  async function handleDeleteAll() {
+    if (!selectedLedger || !yearMonth) return;
+    setDeletingAll(true);
+    setDeleteAllConfirm(false);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ ledgerId: selectedLedger, yearMonth });
+      const res = await fetch(`/api/budgets?${params}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) throw new Error("Failed to delete allocations");
+      await fetchData();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setDeletingAll(false);
+    }
+  }
+
   const available = overview ? parseFloat(overview.totals.availableToBudgetEur) : 0;
   const allocated = overview ? parseFloat(overview.totals.allocatedBudgetEur) : 0;
   const remaining = overview ? parseFloat(overview.totals.remainingToAllocateEur) : 0;
@@ -378,10 +435,50 @@ export default function BudgetsPage() {
               <input
                 type="month"
                 value={yearMonth}
-                onChange={(e) => setYearMonth(e.target.value)}
+                onChange={(e) => { setYearMonth(e.target.value); setDeleteAllConfirm(false); }}
                 className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
             </div>
+            {/* Quick actions */}
+            {selectedLedger && (
+              <div className="flex items-center gap-2 pb-0.5">
+                <button
+                  onClick={handleCopyFromPrev}
+                  disabled={copying || loading}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors disabled:opacity-40"
+                  title={`Copy all allocations from ${formatYearMonth(getPrevYearMonth(yearMonth))}`}
+                >
+                  {copying ? "Copying…" : `↙ Copy from ${formatYearMonth(getPrevYearMonth(yearMonth))}`}
+                </button>
+                {overview && overview.allocations.length > 0 && (
+                  deleteAllConfirm ? (
+                    <>
+                      <button
+                        onClick={handleDeleteAll}
+                        disabled={deletingAll}
+                        className="px-3 py-2 rounded-lg text-sm bg-red-600 text-white hover:bg-red-500 transition-colors disabled:opacity-40"
+                      >
+                        {deletingAll ? "Deleting…" : "Confirm delete all"}
+                      </button>
+                      <button
+                        onClick={() => setDeleteAllConfirm(false)}
+                        className="px-3 py-2 rounded-lg text-sm bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteAllConfirm(true)}
+                      className="px-3 py-2 rounded-lg text-sm bg-slate-800 text-red-400 hover:bg-red-900/30 hover:text-red-300 transition-colors"
+                      title={`Delete all allocations for ${formatYearMonth(yearMonth)}`}
+                    >
+                      🗑 Clear {formatYearMonth(yearMonth)}
+                    </button>
+                  )
+                )}
+              </div>
+            )}
           </div>
 
           {error && (

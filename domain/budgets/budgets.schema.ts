@@ -57,3 +57,22 @@ export const ListBudgetAllocationsQuerySchema = z.object({
 });
 
 export type ListBudgetAllocationsQuery = z.infer<typeof ListBudgetAllocationsQuerySchema>;
+
+export const CopyBudgetAllocationsBodySchema = z
+  .object({
+    ledgerId: IdSchema,
+    fromYearMonth: YearMonthSchema,
+    toYearMonth: YearMonthSchema,
+  })
+  .refine((d) => d.fromYearMonth !== d.toYearMonth, {
+    message: "Source and destination months must differ",
+  });
+
+export type CopyBudgetAllocationsBody = z.infer<typeof CopyBudgetAllocationsBodySchema>;
+
+export const DeleteAllBudgetAllocationsQuerySchema = z.object({
+  ledgerId: IdSchema,
+  yearMonth: YearMonthSchema,
+});
+
+export type DeleteAllBudgetAllocationsQuery = z.infer<typeof DeleteAllBudgetAllocationsQuerySchema>;
