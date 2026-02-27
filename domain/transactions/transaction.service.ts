@@ -4,7 +4,6 @@ import { requireLedgerAccess } from "@/lib/api/ledger-access";
 import type {
   CreateTransactionBody,
   CreateTransactionsBody,
-  Transaction,
   UpdateTransactionBody,
 } from "@/domain/transactions/transaction.schemas";
 import type { DateRange } from "./transactions.repository";

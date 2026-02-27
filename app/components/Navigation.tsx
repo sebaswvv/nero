@@ -37,6 +37,7 @@ export default function Navigation() {
     { href: "/ledgers", icon: "📒", label: "Ledgers" },
     { href: "/recurring", icon: "🔄", label: "Recurring" },
     { href: "/transactions", icon: "💰", label: "Transactions" },
+    { href: "/budgets", icon: "🎯", label: "Budgets" },
     { href: "/averages", icon: "📈", label: "Averages" },
   ];
 

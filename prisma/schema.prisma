@@ -46,6 +46,7 @@ model User {
   ledgerMembers  LedgerMember[]
   transactions   Transaction[]
   recurringItems RecurringItem[]
+  budgetAllocations BudgetAllocation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,6 +99,7 @@ model Ledger {
   members        LedgerMember[]
   transactions   Transaction[]
   recurringItems RecurringItem[]
+  budgetAllocations BudgetAllocation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -179,4 +181,26 @@ model RecurringItemVersion {
 
   @@index([recurringItemId, validFrom])
   @@index([validFrom, validTo])
+}
+
+model BudgetAllocation {
+  id        String @id @default(cuid())
+  ledgerId  String
+  userId    String
+
+  yearMonth String
+  category  Category?
+  name      String?
+
+  budgetAmountEur Decimal @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ledger Ledger @relation(fields: [ledgerId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ledgerId, yearMonth, category])
+  @@unique([ledgerId, yearMonth, name])
+  @@index([ledgerId, yearMonth])
 }
