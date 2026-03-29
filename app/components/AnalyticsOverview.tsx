@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ExpensesSummaryCard from "./analytics/ExpensesSummary";
 import IncomeSummaryCard from "./analytics/IncomeSummary";
 import NetBalanceSummaryCard from "@/app/components/analytics/NetBalanceSummary";
-import { startOfCurrentMonth, endOfCurrentMonth } from "./analytics/dateUtils";
+import { currentMonth, monthToDateRange } from "./analytics/dateUtils";
 import Card from "./ui/Card";
 import Select from "./ui/Select";
 import Input from "./ui/Input";
@@ -34,8 +34,7 @@ type CombinedAnalyticsSummary = {
 export default function AnalyticsOverview() {
   const [ledgers, setLedgers] = useState<Ledger[]>([]);
   const [selectedLedger, setSelectedLedger] = useState<string>("");
-  const [fromDate, setFromDate] = useState<string>(startOfCurrentMonth());
-  const [toDate, setToDate] = useState<string>(endOfCurrentMonth());
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonth());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [summary, setSummary] = useState<CombinedAnalyticsSummary | null>(null);
@@ -61,8 +60,15 @@ export default function AnalyticsOverview() {
 
   useEffect(() => {
     async function fetchAnalytics() {
-      if (!selectedLedger || !fromDate || !toDate) {
+      if (!selectedLedger || !selectedMonth) {
         setSummary(null);
+        return;
+      }
+
+      const range = monthToDateRange(selectedMonth);
+      if (!range) {
+        setSummary(null);
+        setError("Invalid month selected");
         return;
       }
 
@@ -72,8 +78,8 @@ export default function AnalyticsOverview() {
       try {
         const params = new URLSearchParams({
           ledgerId: selectedLedger,
-          from: fromDate,
-          to: toDate,
+          from: range.from,
+          to: range.to,
         });
         const res = await fetch(`/api/analytics/summary?${params.toString()}`, {
           credentials: "include",
@@ -101,7 +107,7 @@ export default function AnalyticsOverview() {
     }
 
     fetchAnalytics();
-  }, [selectedLedger, fromDate, toDate]);
+  }, [selectedLedger, selectedMonth]);
 
   if (ledgers.length === 0) {
     return (
@@ -120,11 +126,11 @@ export default function AnalyticsOverview() {
           <div>
             <h2 className="text-xl font-semibold text-white mb-1">Financial Overview</h2>
             <p className="text-sm text-slate-400">
-              View your income, expenses, and balance for a selected period
+              View your income, expenses, and balance for a selected month
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               label="Ledger"
               value={selectedLedger}
@@ -134,18 +140,10 @@ export default function AnalyticsOverview() {
             />
 
             <Input
-              type="date"
-              label="From"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              fullWidth
-            />
-
-            <Input
-              type="date"
-              label="To"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
+              type="month"
+              label="Month"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
               fullWidth
             />
           </div>
