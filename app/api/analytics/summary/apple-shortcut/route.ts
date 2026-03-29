@@ -2,10 +2,16 @@ export const runtime = "nodejs";
 
 import { jsonResponse } from "@/lib/api/http";
 import { getApiKey, getUserIdFromApiKey } from "@/lib/api/api-key";
-import { routeHandler, parseQuery } from "@/lib/api/validation";
-import { ExpensesSummaryQuerySchema } from "@/domain/analytics/analytics.schema";
+import { routeHandler, parseParams } from "@/lib/api/validation";
+import { AppleShortcutSummaryHeadersSchema } from "@/domain/analytics/analytics.schema";
 import { getExpensesSummary } from "@/domain/analytics/analytics.service";
-import { resolveDateRange } from "@/lib/api/date-range";
+
+function getCurrentMonthRange() {
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), 1);
+  const to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  return { from, to };
+}
 
 // GET /api/analytics/summary/apple-shortcut
 // requires x-api-key and returns expenses summary only
@@ -23,9 +29,12 @@ export async function GET(req: Request) {
       return jsonResponse({ error: "Invalid API key" }, 401);
     }
 
-    const query = parseQuery(req, ExpensesSummaryQuerySchema);
-    const range = resolveDateRange({ from: query.from, to: query.to });
-    const summary = await getExpensesSummary(userId, query.ledgerId, range);
+    const headers = parseParams(
+      { ledgerId: req.headers.get("x-ledger-id") ?? undefined },
+      AppleShortcutSummaryHeadersSchema
+    );
+    const range = getCurrentMonthRange();
+    const summary = await getExpensesSummary(userId, headers.ledgerId, range);
 
     return jsonResponse(summary);
   });

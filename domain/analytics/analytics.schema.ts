@@ -35,3 +35,8 @@ export const MonthlyAveragesQuerySchema = z.object({
   to: OccurredAtSchema,
 });
 export type MonthlyAveragesQuery = z.infer<typeof MonthlyAveragesQuerySchema>;
+
+export const AppleShortcutSummaryHeadersSchema = z.object({
+  ledgerId: IdSchema,
+});
+export type AppleShortcutSummaryHeaders = z.infer<typeof AppleShortcutSummaryHeadersSchema>;
