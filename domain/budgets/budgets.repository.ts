@@ -65,6 +65,7 @@ export async function listLatestRecurringAmountsForMonth(
   monthStart: Date,
   nextMonthStart: Date
 ): Promise<Prisma.Decimal[]> {
+  // Avoid relation include on recurringItem: Prisma 7.6 + accelerate can emit invalid SQL aliases here.
   const items = await prisma.recurringItem.findMany({
     where: {
       ledgerId,
@@ -77,19 +78,33 @@ export async function listLatestRecurringAmountsForMonth(
         },
       },
     },
-    include: {
-      versions: {
-        where: {
-          validFrom: { lt: nextMonthStart },
-          OR: [{ validTo: null }, { validTo: { gte: monthStart } }],
-        },
-        orderBy: { validFrom: "desc" },
-        take: 1,
-      },
+    select: { id: true },
+  });
+
+  if (items.length === 0) {
+    return [];
+  }
+
+  const versions = await prisma.recurringItemVersion.findMany({
+    where: {
+      recurringItemId: { in: items.map((item) => item.id) },
+      validFrom: { lt: nextMonthStart },
+      OR: [{ validTo: null }, { validTo: { gte: monthStart } }],
+    },
+    orderBy: [{ recurringItemId: "asc" }, { validFrom: "desc" }],
+    select: {
+      recurringItemId: true,
+      amountEur: true,
     },
   });
 
-  return items
-    .map((item) => item.versions[0]?.amountEur)
-    .filter((amount): amount is Prisma.Decimal => amount !== undefined);
+  const latestAmountByItemId = new Map<string, Prisma.Decimal>();
+
+  for (const version of versions) {
+    if (!latestAmountByItemId.has(version.recurringItemId)) {
+      latestAmountByItemId.set(version.recurringItemId, version.amountEur);
+    }
+  }
+
+  return [...latestAmountByItemId.values()];
 }
