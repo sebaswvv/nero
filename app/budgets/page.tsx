@@ -409,7 +409,20 @@ export default function BudgetsPage() {
   const available = overview ? parseFloat(overview.totals.availableToBudgetEur) : 0;
   const allocated = overview ? parseFloat(overview.totals.allocatedBudgetEur) : 0;
   const remaining = overview ? parseFloat(overview.totals.remainingToAllocateEur) : 0;
-  const totalSpent = Object.values(spending).reduce((sum, v) => sum + parseFloat(v), 0);
+  const totalSpent = overview
+    ? overview.allocations.reduce((sum, alloc) => {
+        if (!alloc.category) return sum;
+        return sum + parseFloat(spending[alloc.category] ?? "0");
+      }, 0)
+    : 0;
+  const spendingBudget = overview
+    ? overview.allocations.reduce((sum, alloc) => {
+        if (!alloc.category) return sum;
+        return sum + parseFloat(alloc.budgetAmountEur);
+      }, 0)
+    : 0;
+  const spendingLeft = spendingBudget - totalSpent;
+  const spendingPct = spendingBudget > 0 ? Math.min((totalSpent / spendingBudget) * 100, 100) : (totalSpent > 0 ? 100 : 0);
   const allocatedPct = available > 0 ? Math.min((allocated / available) * 100, 100) : 0;
 
   return (
@@ -491,21 +504,67 @@ export default function BudgetsPage() {
             <div className="flex justify-center py-24"><LoadingSpinner /></div>
           ) : overview ? (
             <div className="space-y-6">
+              <Card padding="lg" className="border-slate-700/70 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800/90">
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
+                  <div>
+                    <h2 className="text-base font-semibold text-white">Budget spending overview</h2>
+                    <p className="text-sm text-slate-400 mt-0.5">
+                      {formatEur(totalSpent)} spent from {formatEur(spendingBudget)} spending budget
+                    </p>
+                  </div>
+                  <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                    spendingLeft < 0 ? "bg-red-900/40 text-red-400" :
+                    spendingPct >= 85 ? "bg-amber-900/40 text-amber-400" :
+                    "bg-emerald-900/40 text-emerald-400"
+                  }`}>
+                    {spendingPct.toFixed(0)}% used
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-900/70 p-4">
+                    <p className="text-xs uppercase tracking-wider text-slate-400">Total Spent</p>
+                    <p className="text-3xl sm:text-4xl font-bold text-white mt-1">{formatEur(totalSpent)}</p>
+                  </div>
+                  <div className="rounded-xl border border-slate-700/60 bg-slate-900/70 p-4">
+                    <p className="text-xs uppercase tracking-wider text-slate-400">{spendingLeft < 0 ? "Over Budget" : "Budget Left"}</p>
+                    <p className={`text-3xl sm:text-4xl font-bold mt-1 ${spendingLeft < 0 ? "text-red-400" : "text-emerald-400"}`}>
+                      {formatEur(Math.abs(spendingLeft))}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span>Spending progress</span>
+                    <span>{spendingPct.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`h-3 rounded-full transition-all duration-700 ${
+                        spendingLeft < 0 ? "bg-red-500" : spendingPct >= 85 ? "bg-amber-500" : "bg-emerald-500"
+                      }`}
+                      style={{ width: `${spendingPct}%` }}
+                    />
+                  </div>
+                </div>
+              </Card>
+
               {/* Stat cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <StatCard label="Monthly Income"  value={formatEur(overview.totals.recurringIncomeEur)}  color="emerald" sub="recurring" />
                 <StatCard label="Fixed Expenses"  value={formatEur(overview.totals.recurringExpensesEur)} color="red"    sub="recurring" />
                 <StatCard
-                  label="Total Spent"
-                  value={formatEur(totalSpent)}
-                  color={totalSpent > allocated ? "red" : "blue"}
-                  sub="variable this month"
+                  label="Available To Budget"
+                  value={formatEur(available)}
+                  color="blue"
+                  sub="after fixed costs"
                 />
                 <StatCard
-                  label={remaining < 0 ? "Over Budget" : "Left"}
+                  label={remaining < 0 ? "Over Planned" : "Still To Plan"}
                   value={formatEur(Math.abs(remaining))}
                   color={remaining < 0 ? "red" : "amber"}
-                  sub={remaining < 0 ? "reduce allocations" : "after budget"}
+                  sub={remaining < 0 ? "reduce allocations" : "not allocated yet"}
                 />
               </div>
 
