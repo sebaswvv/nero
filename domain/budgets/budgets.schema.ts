@@ -7,6 +7,7 @@ export const BudgetCategorySchema = z.enum([
   "going_out",
   "transport",
   "clothing",
+  "cosmetics",
   "health_and_fitness",
   "other",
   "gifts",
@@ -39,9 +40,13 @@ export const CreateBudgetAllocationBodySchema = z
     name: z.string().min(1).max(100).optional(),
     budgetAmountEur: BudgetAmountEurSchema,
   })
-  .refine((data) => data.category !== undefined || (data.name !== undefined && data.name.trim().length > 0), {
-    message: "Either category or name must be provided",
-  });
+  .refine(
+    (data) =>
+      data.category !== undefined || (data.name !== undefined && data.name.trim().length > 0),
+    {
+      message: "Either category or name must be provided",
+    }
+  );
 
 export type CreateBudgetAllocationBody = z.infer<typeof CreateBudgetAllocationBodySchema>;
 
