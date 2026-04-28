@@ -36,6 +36,7 @@ const CATEGORIES = [
   "going_out",
   "transport",
   "clothing",
+  "cosmetics",
   "health_and_fitness",
   "other",
   "gifts",
@@ -72,20 +73,20 @@ function formatMonthYear(date: Date): string {
 // Group transactions by date
 function groupTransactionsByDate(transactions: Transaction[]): Map<string, Transaction[]> {
   const grouped = new Map<string, Transaction[]>();
-  
+
   transactions.forEach((tx) => {
     const date = new Date(tx.occurredAt).toLocaleDateString("nl-NL", {
       day: "numeric",
       month: "short",
       year: "numeric",
     });
-    
+
     if (!grouped.has(date)) {
       grouped.set(date, []);
     }
     grouped.get(date)!.push(tx);
   });
-  
+
   return grouped;
 }
 
@@ -97,6 +98,7 @@ function getCategoryIcon(category: string): string {
     going_out: "🎉",
     transport: "🚗",
     clothing: "👕",
+    cosmetics: "💄",
     health_and_fitness: "💪",
     other: "📦",
     gifts: "🎁",
@@ -350,7 +352,7 @@ export default function TransactionsPage() {
         direction: editForm.direction,
         occurredAt: editForm.occurredAt,
       };
-      
+
       // Include description even if empty (allows clearing it)
       body.description = editForm.description.trim() || null;
 
@@ -420,7 +422,7 @@ export default function TransactionsPage() {
                 );
               })}
             </div>
-            
+
             {/* Month Picker & Today Button */}
             <div className="flex items-center gap-2">
               <input
@@ -462,11 +464,7 @@ export default function TransactionsPage() {
           {/* Add Transaction Button */}
           {!showCreateForm && !editingId && (
             <div className="mb-4">
-              <Button
-                onClick={() => setShowCreateForm(true)}
-                variant="primary"
-                className="w-full"
-              >
+              <Button onClick={() => setShowCreateForm(true)} variant="primary" className="w-full">
                 + Add Transaction
               </Button>
             </div>
@@ -556,13 +554,10 @@ export default function TransactionsPage() {
           ) : (
             <div className="space-y-6">
               {Array.from(groupedTransactions.entries()).map(([date, dayTransactions]) => {
-                const dayTotal = dayTransactions.reduce(
-                  (sum, tx) => {
-                    const amount = parseFloat(tx.amountEur);
-                    return tx.direction === "income" ? sum + amount : sum - amount;
-                  },
-                  0
-                );
+                const dayTotal = dayTransactions.reduce((sum, tx) => {
+                  const amount = parseFloat(tx.amountEur);
+                  return tx.direction === "income" ? sum + amount : sum - amount;
+                }, 0);
 
                 return (
                   <div key={date}>
@@ -593,7 +588,9 @@ export default function TransactionsPage() {
                           return (
                             <Card key={tx.id} className="border border-blue-500/50">
                               <form onSubmit={handleUpdate} className="space-y-4">
-                                <h3 className="text-lg font-semibold text-white">Edit Transaction</h3>
+                                <h3 className="text-lg font-semibold text-white">
+                                  Edit Transaction
+                                </h3>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                   <Input
@@ -659,7 +656,12 @@ export default function TransactionsPage() {
                                 </div>
 
                                 <div className="flex gap-2">
-                                  <Button type="submit" disabled={updating} variant="primary" size="sm">
+                                  <Button
+                                    type="submit"
+                                    disabled={updating}
+                                    variant="primary"
+                                    size="sm"
+                                  >
                                     {updating ? "Saving..." : "Save"}
                                   </Button>
                                   <Button

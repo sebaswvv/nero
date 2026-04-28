@@ -50,20 +50,22 @@ const CATEGORIES = [
   "going_out",
   "transport",
   "clothing",
+  "cosmetics",
   "health_and_fitness",
   "other",
   "gifts",
 ] as const;
 
 const categoryMeta: Record<string, { label: string; icon: string; bar: string }> = {
-  groceries:          { label: "Groceries",       icon: "🛒", bar: "bg-emerald-500" },
-  eating_out:         { label: "Eating Out",       icon: "🍽️", bar: "bg-orange-500"  },
-  going_out:          { label: "Going Out",        icon: "🎉", bar: "bg-purple-500"  },
-  transport:          { label: "Transport",         icon: "🚗", bar: "bg-blue-500"    },
-  clothing:           { label: "Clothing",          icon: "👕", bar: "bg-pink-500"    },
-  health_and_fitness: { label: "Health & Fitness", icon: "💪", bar: "bg-cyan-500"    },
-  other:              { label: "Other",             icon: "📦", bar: "bg-slate-400"   },
-  gifts:              { label: "Gifts",             icon: "🎁", bar: "bg-rose-500"    },
+  groceries: { label: "Groceries", icon: "🛒", bar: "bg-emerald-500" },
+  eating_out: { label: "Eating Out", icon: "🍽️", bar: "bg-orange-500" },
+  going_out: { label: "Going Out", icon: "🎉", bar: "bg-purple-500" },
+  transport: { label: "Transport", icon: "🚗", bar: "bg-blue-500" },
+  clothing: { label: "Clothing", icon: "👕", bar: "bg-pink-500" },
+  cosmetics: { label: "Cosmetics", icon: "💄", bar: "bg-fuchsia-500" },
+  health_and_fitness: { label: "Health & Fitness", icon: "💪", bar: "bg-cyan-500" },
+  other: { label: "Other", icon: "📦", bar: "bg-slate-400" },
+  gifts: { label: "Gifts", icon: "🎁", bar: "bg-rose-500" },
 };
 
 /* =======================
@@ -86,7 +88,11 @@ function monthDateRange(yearMonth: string): { from: string; to: string } {
 
 function formatEur(amount: string | number): string {
   const n = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", minimumFractionDigits: 2 }).format(n);
+  return new Intl.NumberFormat("nl-NL", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+  }).format(n);
 }
 
 function getPrevYearMonth(yearMonth: string): string {
@@ -104,10 +110,23 @@ function formatYearMonth(ym: string): string {
    Sub-components
 ======================= */
 
-function StatCard({ label, value, color, sub }: {
-  label: string; value: string; color: "emerald" | "red" | "blue" | "amber"; sub?: string;
+function StatCard({
+  label,
+  value,
+  color,
+  sub,
+}: {
+  label: string;
+  value: string;
+  color: "emerald" | "red" | "blue" | "amber";
+  sub?: string;
 }) {
-  const textColors = { emerald: "text-emerald-400", red: "text-red-400", blue: "text-blue-400", amber: "text-amber-400" };
+  const textColors = {
+    emerald: "text-emerald-400",
+    red: "text-red-400",
+    blue: "text-blue-400",
+    amber: "text-amber-400",
+  };
   return (
     <Card padding="md">
       <p className="text-xs uppercase tracking-wider text-slate-400 mb-1">{label}</p>
@@ -123,18 +142,38 @@ function SpendingBar({ spent, budget }: { spent: number; budget: number }) {
   const barClass = isOver ? "bg-red-500" : pct >= 85 ? "bg-amber-500" : "bg-emerald-500";
   return (
     <div className="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden">
-      <div className={`h-2 rounded-full transition-all duration-700 ${barClass}`} style={{ width: `${pct}%` }} />
+      <div
+        className={`h-2 rounded-full transition-all duration-700 ${barClass}`}
+        style={{ width: `${pct}%` }}
+      />
     </div>
   );
 }
 
 function CategoryCard({
-  alloc, spent, isEditing, editAmount, isSaving, isDeleting,
-  onStartEdit, onEditChange, onSave, onCancelEdit, onDelete,
+  alloc,
+  spent,
+  isEditing,
+  editAmount,
+  isSaving,
+  isDeleting,
+  onStartEdit,
+  onEditChange,
+  onSave,
+  onCancelEdit,
+  onDelete,
 }: {
-  alloc: BudgetAllocation; spent: number; isEditing: boolean; editAmount: string;
-  isSaving: boolean; isDeleting: boolean; onStartEdit: () => void;
-  onEditChange: (v: string) => void; onSave: () => void; onCancelEdit: () => void; onDelete: () => void;
+  alloc: BudgetAllocation;
+  spent: number;
+  isEditing: boolean;
+  editAmount: string;
+  isSaving: boolean;
+  isDeleting: boolean;
+  onStartEdit: () => void;
+  onEditChange: (v: string) => void;
+  onSave: () => void;
+  onCancelEdit: () => void;
+  onDelete: () => void;
 }) {
   const isSavings = !alloc.category;
   const meta = alloc.category ? categoryMeta[alloc.category] : null;
@@ -153,10 +192,13 @@ function CategoryCard({
           <span className="text-2xl shrink-0">{displayIcon}</span>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">{displayLabel}</p>
-            {isSavings
-              ? <p className="text-xs text-emerald-500/70">savings goal</p>
-              : <p className="text-xs text-slate-500">{formatEur(spent)} spent of {formatEur(budget)}</p>
-            }
+            {isSavings ? (
+              <p className="text-xs text-emerald-500/70">savings goal</p>
+            ) : (
+              <p className="text-xs text-slate-500">
+                {formatEur(spent)} spent of {formatEur(budget)}
+              </p>
+            )}
           </div>
         </div>
         <button
@@ -185,7 +227,12 @@ function CategoryCard({
             }}
           />
           <div className="flex gap-2">
-            <Button size="sm" onClick={onSave} disabled={isSaving || !editAmount} className="flex-1">
+            <Button
+              size="sm"
+              onClick={onSave}
+              disabled={isSaving || !editAmount}
+              className="flex-1"
+            >
               {isSaving ? "Saving…" : "Save"}
             </Button>
             <Button size="sm" variant="ghost" onClick={onCancelEdit}>
@@ -194,7 +241,11 @@ function CategoryCard({
           </div>
         </div>
       ) : (
-        <button className="text-left group/amount" onClick={onStartEdit} title="Click to edit budget">
+        <button
+          className="text-left group/amount"
+          onClick={onStartEdit}
+          title="Click to edit budget"
+        >
           <span className="text-2xl font-bold text-white group-hover/amount:text-emerald-400 transition-colors">
             {formatEur(budget)}
           </span>
@@ -270,13 +321,20 @@ export default function BudgetsPage() {
     try {
       const { from, to } = monthDateRange(yearMonth);
       const [budgetRes, spendingRes] = await Promise.all([
-        fetch(`/api/budgets?${new URLSearchParams({ ledgerId: selectedLedger, yearMonth })}`, { credentials: "include" }),
-        fetch(`/api/analytics/expenses-summary?${new URLSearchParams({ ledgerId: selectedLedger, from, to })}`, { credentials: "include" }),
+        fetch(`/api/budgets?${new URLSearchParams({ ledgerId: selectedLedger, yearMonth })}`, {
+          credentials: "include",
+        }),
+        fetch(
+          `/api/analytics/expenses-summary?${new URLSearchParams({ ledgerId: selectedLedger, from, to })}`,
+          { credentials: "include" }
+        ),
       ]);
       if (!budgetRes.ok) throw new Error("Failed to load budget overview");
       if (!spendingRes.ok) throw new Error("Failed to load spending data");
-      const [budgetData, spendingData]: [BudgetOverview, { perCategoryEur: Record<string, string> }] =
-        await Promise.all([budgetRes.json(), spendingRes.json()]);
+      const [budgetData, spendingData]: [
+        BudgetOverview,
+        { perCategoryEur: Record<string, string> },
+      ] = await Promise.all([budgetRes.json(), spendingRes.json()]);
       setOverview(budgetData);
       setSpending(spendingData.perCategoryEur ?? {});
     } catch (e) {
@@ -286,7 +344,9 @@ export default function BudgetsPage() {
     }
   }, [selectedLedger, yearMonth]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const usedCategories = new Set(
     overview?.allocations.filter((a) => a.category).map((a) => a.category as string) ?? []
@@ -310,8 +370,18 @@ export default function BudgetsPage() {
     try {
       const body =
         addType === "category"
-          ? { ledgerId: selectedLedger, yearMonth, category: addCategory, budgetAmountEur: addAmount }
-          : { ledgerId: selectedLedger, yearMonth, name: addName.trim(), budgetAmountEur: addAmount };
+          ? {
+              ledgerId: selectedLedger,
+              yearMonth,
+              category: addCategory,
+              budgetAmountEur: addAmount,
+            }
+          : {
+              ledgerId: selectedLedger,
+              yearMonth,
+              name: addName.trim(),
+              budgetAmountEur: addAmount,
+            };
       const res = await fetch("/api/budgets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -396,7 +466,10 @@ export default function BudgetsPage() {
     setError(null);
     try {
       const params = new URLSearchParams({ ledgerId: selectedLedger, yearMonth });
-      const res = await fetch(`/api/budgets?${params}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`/api/budgets?${params}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to delete allocations");
       await fetchData();
     } catch (e) {
@@ -422,7 +495,12 @@ export default function BudgetsPage() {
       }, 0)
     : 0;
   const spendingLeft = spendingBudget - totalSpent;
-  const spendingPct = spendingBudget > 0 ? Math.min((totalSpent / spendingBudget) * 100, 100) : (totalSpent > 0 ? 100 : 0);
+  const spendingPct =
+    spendingBudget > 0
+      ? Math.min((totalSpent / spendingBudget) * 100, 100)
+      : totalSpent > 0
+        ? 100
+        : 0;
   const allocatedPct = available > 0 ? Math.min((allocated / available) * 100, 100) : 0;
 
   return (
@@ -448,7 +526,10 @@ export default function BudgetsPage() {
               <input
                 type="month"
                 value={yearMonth}
-                onChange={(e) => { setYearMonth(e.target.value); setDeleteAllConfirm(false); }}
+                onChange={(e) => {
+                  setYearMonth(e.target.value);
+                  setDeleteAllConfirm(false);
+                }}
                 className="px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
               />
             </div>
@@ -461,10 +542,13 @@ export default function BudgetsPage() {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors disabled:opacity-40"
                   title={`Copy all allocations from ${formatYearMonth(getPrevYearMonth(yearMonth))}`}
                 >
-                  {copying ? "Copying…" : `↙ Copy from ${formatYearMonth(getPrevYearMonth(yearMonth))}`}
+                  {copying
+                    ? "Copying…"
+                    : `↙ Copy from ${formatYearMonth(getPrevYearMonth(yearMonth))}`}
                 </button>
-                {overview && overview.allocations.length > 0 && (
-                  deleteAllConfirm ? (
+                {overview &&
+                  overview.allocations.length > 0 &&
+                  (deleteAllConfirm ? (
                     <>
                       <button
                         onClick={handleDeleteAll}
@@ -488,8 +572,7 @@ export default function BudgetsPage() {
                     >
                       🗑 Clear {formatYearMonth(yearMonth)}
                     </button>
-                  )
-                )}
+                  ))}
               </div>
             )}
           </div>
@@ -501,10 +584,15 @@ export default function BudgetsPage() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-24"><LoadingSpinner /></div>
+            <div className="flex justify-center py-24">
+              <LoadingSpinner />
+            </div>
           ) : overview ? (
             <div className="space-y-6">
-              <Card padding="lg" className="border-slate-700/70 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800/90">
+              <Card
+                padding="lg"
+                className="border-slate-700/70 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800/90"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
                   <div>
                     <h2 className="text-base font-semibold text-white">Budget spending overview</h2>
@@ -512,11 +600,15 @@ export default function BudgetsPage() {
                       {formatEur(totalSpent)} spent from {formatEur(spendingBudget)} spending budget
                     </p>
                   </div>
-                  <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                    spendingLeft < 0 ? "bg-red-900/40 text-red-400" :
-                    spendingPct >= 85 ? "bg-amber-900/40 text-amber-400" :
-                    "bg-emerald-900/40 text-emerald-400"
-                  }`}>
+                  <span
+                    className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                      spendingLeft < 0
+                        ? "bg-red-900/40 text-red-400"
+                        : spendingPct >= 85
+                          ? "bg-amber-900/40 text-amber-400"
+                          : "bg-emerald-900/40 text-emerald-400"
+                    }`}
+                  >
                     {spendingPct.toFixed(0)}% used
                   </span>
                 </div>
@@ -524,11 +616,17 @@ export default function BudgetsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="rounded-xl border border-slate-700/60 bg-slate-900/70 p-4">
                     <p className="text-xs uppercase tracking-wider text-slate-400">Total Spent</p>
-                    <p className="text-3xl sm:text-4xl font-bold text-white mt-1">{formatEur(totalSpent)}</p>
+                    <p className="text-3xl sm:text-4xl font-bold text-white mt-1">
+                      {formatEur(totalSpent)}
+                    </p>
                   </div>
                   <div className="rounded-xl border border-slate-700/60 bg-slate-900/70 p-4">
-                    <p className="text-xs uppercase tracking-wider text-slate-400">{spendingLeft < 0 ? "Over Budget" : "Budget Left"}</p>
-                    <p className={`text-3xl sm:text-4xl font-bold mt-1 ${spendingLeft < 0 ? "text-red-400" : "text-emerald-400"}`}>
+                    <p className="text-xs uppercase tracking-wider text-slate-400">
+                      {spendingLeft < 0 ? "Over Budget" : "Budget Left"}
+                    </p>
+                    <p
+                      className={`text-3xl sm:text-4xl font-bold mt-1 ${spendingLeft < 0 ? "text-red-400" : "text-emerald-400"}`}
+                    >
                       {formatEur(Math.abs(spendingLeft))}
                     </p>
                   </div>
@@ -542,7 +640,11 @@ export default function BudgetsPage() {
                   <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
                     <div
                       className={`h-3 rounded-full transition-all duration-700 ${
-                        spendingLeft < 0 ? "bg-red-500" : spendingPct >= 85 ? "bg-amber-500" : "bg-emerald-500"
+                        spendingLeft < 0
+                          ? "bg-red-500"
+                          : spendingPct >= 85
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
                       }`}
                       style={{ width: `${spendingPct}%` }}
                     />
@@ -552,8 +654,18 @@ export default function BudgetsPage() {
 
               {/* Stat cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <StatCard label="Monthly Income"  value={formatEur(overview.totals.recurringIncomeEur)}  color="emerald" sub="recurring" />
-                <StatCard label="Fixed Expenses"  value={formatEur(overview.totals.recurringExpensesEur)} color="red"    sub="recurring" />
+                <StatCard
+                  label="Monthly Income"
+                  value={formatEur(overview.totals.recurringIncomeEur)}
+                  color="emerald"
+                  sub="recurring"
+                />
+                <StatCard
+                  label="Fixed Expenses"
+                  value={formatEur(overview.totals.recurringExpensesEur)}
+                  color="red"
+                  sub="recurring"
+                />
                 <StatCard
                   label="Available To Budget"
                   value={formatEur(available)}
@@ -574,21 +686,30 @@ export default function BudgetsPage() {
                   <div>
                     <h2 className="text-base font-semibold text-white">Budget Planning</h2>
                     <p className="text-sm text-slate-400 mt-0.5">
-                      {formatEur(allocated)} planned of {formatEur(available)} available after fixed costs
+                      {formatEur(allocated)} planned of {formatEur(available)} available after fixed
+                      costs
                     </p>
                   </div>
-                  <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                    allocatedPct >= 100 ? "bg-red-900/40 text-red-400" :
-                    allocatedPct >= 85  ? "bg-amber-900/40 text-amber-400" :
-                                          "bg-emerald-900/40 text-emerald-400"
-                  }`}>
+                  <span
+                    className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                      allocatedPct >= 100
+                        ? "bg-red-900/40 text-red-400"
+                        : allocatedPct >= 85
+                          ? "bg-amber-900/40 text-amber-400"
+                          : "bg-emerald-900/40 text-emerald-400"
+                    }`}
+                  >
                     {allocatedPct.toFixed(0)}% planned
                   </span>
                 </div>
                 <div className="w-full bg-slate-700/50 rounded-full h-3 overflow-hidden">
                   <div
                     className={`h-3 rounded-full transition-all duration-700 ${
-                      allocatedPct >= 100 ? "bg-red-500" : allocatedPct >= 85 ? "bg-amber-500" : "bg-emerald-500"
+                      allocatedPct >= 100
+                        ? "bg-red-500"
+                        : allocatedPct >= 85
+                          ? "bg-amber-500"
+                          : "bg-emerald-500"
                     }`}
                     style={{ width: `${allocatedPct}%` }}
                   />
@@ -598,13 +719,21 @@ export default function BudgetsPage() {
                     {overview.allocations.map((alloc) => {
                       const isSavings = !alloc.category;
                       const meta = alloc.category ? categoryMeta[alloc.category] : null;
-                      const spentAmt = alloc.category ? parseFloat(spending[alloc.category] ?? "0") : 0;
+                      const spentAmt = alloc.category
+                        ? parseFloat(spending[alloc.category] ?? "0")
+                        : 0;
                       const budgetAmt = parseFloat(alloc.budgetAmountEur);
                       const isOver = !isSavings && spentAmt > budgetAmt;
                       return (
-                        <span key={alloc.id} className="flex items-center gap-1.5 text-xs text-slate-400">
-                          <span className={`w-2 h-2 rounded-full inline-block ${isOver ? "bg-red-500" : isSavings ? "bg-emerald-500" : (meta?.bar ?? "bg-slate-500")}`} />
-                          {isSavings ? "💰" : meta?.icon} {isSavings ? (alloc.name ?? "Savings") : (meta?.label ?? alloc.category)}
+                        <span
+                          key={alloc.id}
+                          className="flex items-center gap-1.5 text-xs text-slate-400"
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full inline-block ${isOver ? "bg-red-500" : isSavings ? "bg-emerald-500" : (meta?.bar ?? "bg-slate-500")}`}
+                          />
+                          {isSavings ? "💰" : meta?.icon}{" "}
+                          {isSavings ? (alloc.name ?? "Savings") : (meta?.label ?? alloc.category)}
                         </span>
                       );
                     })}
@@ -625,7 +754,10 @@ export default function BudgetsPage() {
                     editAmount={editAmount}
                     isSaving={savingId === alloc.id}
                     isDeleting={deletingId === alloc.id}
-                    onStartEdit={() => { setEditingId(alloc.id); setEditAmount(alloc.budgetAmountEur); }}
+                    onStartEdit={() => {
+                      setEditingId(alloc.id);
+                      setEditAmount(alloc.budgetAmountEur);
+                    }}
                     onEditChange={setEditAmount}
                     onSave={() => handleSaveEdit(alloc.id)}
                     onCancelEdit={() => setEditingId(null)}
@@ -633,13 +765,21 @@ export default function BudgetsPage() {
                   />
                 );
                 if (overview.allocations.length === 0) {
-                  return <EmptyState icon="🎯" title="No budget allocations yet" description="Add your first budget allocation below to start planning this month." />;
+                  return (
+                    <EmptyState
+                      icon="🎯"
+                      title="No budget allocations yet"
+                      description="Add your first budget allocation below to start planning this month."
+                    />
+                  );
                 }
                 return (
                   <div className="space-y-6">
                     {categoryAllocs.length > 0 && (
                       <div>
-                        <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Spending categories</p>
+                        <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">
+                          Spending categories
+                        </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           {categoryAllocs.map(renderCard)}
                         </div>
@@ -650,7 +790,9 @@ export default function BudgetsPage() {
                     )}
                     {savingsAllocs.length > 0 && (
                       <div>
-                        <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">Savings &amp; investments</p>
+                        <p className="text-xs uppercase tracking-wider text-slate-500 mb-3">
+                          Savings &amp; investments
+                        </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                           {savingsAllocs.map(renderCard)}
                         </div>
@@ -703,7 +845,9 @@ export default function BudgetsPage() {
                         }))}
                       />
                     ) : (
-                      <p className="text-sm text-slate-400 self-center">🎉 All categories are allocated for this month.</p>
+                      <p className="text-sm text-slate-400 self-center">
+                        🎉 All categories are allocated for this month.
+                      </p>
                     )
                   ) : (
                     <Input
@@ -727,7 +871,8 @@ export default function BudgetsPage() {
                     disabled={
                       adding ||
                       !addAmount ||
-                      (addType === "category" && (!addCategory || availableCategories.length === 0)) ||
+                      (addType === "category" &&
+                        (!addCategory || availableCategories.length === 0)) ||
                       (addType === "savings" && !addName.trim())
                     }
                   >
@@ -743,4 +888,3 @@ export default function BudgetsPage() {
     </div>
   );
 }
-

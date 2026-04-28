@@ -15,6 +15,7 @@ export const TransactionCategorySchema = z.enum([
   "going_out",
   "transport",
   "clothing",
+  "cosmetics",
   "health_and_fitness",
   "other",
   "gifts",

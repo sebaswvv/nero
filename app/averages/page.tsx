@@ -35,6 +35,7 @@ const categoryLabels: Record<string, string> = {
   going_out: "🎉 Going Out",
   transport: "🚗 Transport",
   clothing: "👕 Clothing",
+  cosmetics: "💄 Cosmetics",
   health_and_fitness: "💪 Health & Fitness",
   gifts: "🎁 Gifts",
   other: "📦 Other",
